@@ -30,7 +30,7 @@ class Alumno(models.Model):
     id_periodo = models.ForeignKey('Periodo', models.DO_NOTHING, db_column='id_periodo', blank=True, null=True)
 
     class Meta:
-        managed = False
+
         db_table = 'alumno'
 
 
