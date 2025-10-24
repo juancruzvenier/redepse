@@ -79,11 +79,11 @@ WSGI_APPLICATION = 'redepse.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'redepse',
+        'NAME': 'railway',
         'USER': 'root',
-        'PASSWORD': '02315',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'PASSWORD': 'jcbBqzJuWsCacFkhYbimbRwFxaUtwZHJ',
+        'HOST': 'shuttle.proxy.rlwy.net',
+        'PORT': '10538',
     }
 }
 
