@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "apps.usuarios",
     "apps.escuelas",
     "apps.secretarias",
+    "apps.accounts.apps.AccountsConfig",
 ]
 
 MIDDLEWARE = [
