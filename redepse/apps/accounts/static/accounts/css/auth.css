@@ -1,0 +1,133 @@
+/* Fondo con gradiente azul a rojo */
+body {
+    margin: 0;
+    height: 100vh;
+    background: linear-gradient(to right, #0066ff, #ff0040);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Contenedor principal */
+.auth-container {
+    background: #fff;
+    padding: 40px 50px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    text-align: center;
+    width: 380px;
+}
+
+/* Logo */
+.auth-container img {
+    width: 90px;
+    margin-bottom: 15px;
+}
+
+/* Título */
+.auth-container h1 {
+    font-size: 1.5rem;
+    margin-bottom: 25px;
+    color: #111;
+    font-weight: 700;
+}
+
+/* Inputs */
+.auth-container input[type="text"],
+.auth-container input[type="email"],
+.auth-container input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.auth-container input:focus {
+    border-color: #0066ff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 102, 255, 0.3);
+}
+
+/* Botón */
+.auth-container input[type="submit"] {
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+.auth-container input[type="submit"]:hover {
+    background-color: #0056d6;
+}
+
+/* Enlaces */
+.auth-container a {
+    display: inline-block;
+    margin-top: 15px;
+    text-decoration: none;
+    color: #007bff;
+    font-size: 0.9rem;
+}
+
+.auth-container a:hover {
+    text-decoration: underline;
+}
+
+/* ===================== */
+/* 🔥 Mensajes de éxito y error */
+/* ===================== */
+.messages {
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.messages p {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 1rem;
+    text-align: center;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+    height: 44px; /* igual alto que los inputs */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+}
+
+/* Éxito */
+.messages p.success {
+    background-color: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+}
+
+/* Error */
+.messages p.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}
+
+/* 🔄 Animación suave al aparecer */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.messages p {
+    animation: fadeIn 0.3s ease;
+}

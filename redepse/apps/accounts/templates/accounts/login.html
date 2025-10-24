@@ -1,14 +1,31 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Login</title>
+    <meta charset="UTF-8">
+    <title>Iniciar sesión</title>
+    <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}">
 </head>
 <body>
-    <h2>Iniciar Sesión</h2>
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Ingresar</button>
-    </form>
+    <div class="auth-container">
+        <img src="{% static 'accounts/img/logo.jpeg' %}" alt="Logo">
+        <h1>REDEPSE</h1>
+
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <p class="{{ message.tags }}">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="email" name="username" placeholder="Correo electrónico" required>
+            <input type="password" name="password" placeholder="Contraseña" required>
+            <input type="submit" value="Iniciar sesión">
+        </form>
+        <a href="{% url 'register' %}">¿No tienes cuenta? Regístrate</a>
+    </div>
 </body>
 </html>
