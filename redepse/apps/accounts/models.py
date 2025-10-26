@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
 class Escuela(models.Model):
     id_esc = models.AutoField(primary_key=True)
     nombre_esc = models.CharField(max_length=150)

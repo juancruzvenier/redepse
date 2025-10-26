@@ -3,7 +3,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Escuelas Registradas</title>
+  <title>Solicitudes Pendientes</title>
   <link rel="stylesheet" href="{% static 'accounts/css/admin.css' %}">
 </head>
 <body>
@@ -47,7 +47,7 @@
 
       <section class="table-section">
         <div class="table-header">
-          <h2>Escuelas Registradas</h2>
+          <h2>Solicitudes Pendientes</h2>
           <div class="filters">
             <input type="text" placeholder="Buscar por escuela">
             <input type="text" placeholder="Buscar por municipio">
@@ -74,12 +74,14 @@
                 <td>{{ e.telefono2|default:"—" }}</td>
                 <td>{{ e.email }}</td>
                 <td>
-                  <a href="{% url 'detalle_escuela' e.id_esc %}?from=admin_dashboard" class="view-btn">Ver datos</a>
+                  <a href="{% url 'detalle_escuela' e.id_esc %}?from=solicitudes_pendientes" class="view-btn">Ver datos</a>
+                  <button class="btn-aprobar" onclick="abrirModal('aprobar', {{ e.id_esc }}, '{{ e.email }}')">Aprobar</button>
+                  <button class="btn-denegar" onclick="abrirModal('denegar', {{ e.id_esc }}, '{{ e.email }}')">Denegar</button>
                 </td>
               </tr>
             {% empty %}
               <tr>
-                <td colspan="6" style="text-align:center; color:#999;">No hay escuelas registradas.</td>
+                <td colspan="6" style="text-align:center; color:#999;">No hay solicitudes pendientes.</td>
               </tr>
             {% endfor %}
           </tbody>
@@ -87,9 +89,26 @@
       </section>
     </main>
   </div>
-  
+
+  <!-- Modal -->
+  <div id="modalAccion" class="modal" style="display: none;">
+    <div class="modal-content">
+      <h3 id="modalTitulo">Acción</h3>
+      <textarea id="mensajeObservacion" placeholder="Escribe tus observaciones..." rows="4"></textarea>
+      <div class="modal-buttons">
+        <button id="btnConfirmarAccion" class="btn-aprobar">Confirmar</button>
+        <button onclick="cerrarModal()" class="btn-denegar">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+ <!-- Notificación (fuera de los scripts) -->
+ <div id="notificacion" class="notificacion" style="display:none;">
+    <p id="notificacion-texto"></p>
+  </div>
 
   <script>
+    /* --- FILTROS --- */
     document.addEventListener("DOMContentLoaded", function() {
       const inputEscuela = document.querySelector("input[placeholder='Buscar por escuela']");
       const inputMunicipio = document.querySelector("input[placeholder='Buscar por municipio']");
@@ -123,6 +142,78 @@
       inputEscuela.addEventListener("input", filtrar);
       inputMunicipio.addEventListener("input", filtrar);
     });
-  </script>
+
+    /* --- MODAL --- */
+    let accionSeleccionada = '';
+    let escuelaSeleccionada = null;
+    let emailEscuela = '';
+
+    function abrirModal(accion, id_esc, email) {
+      accionSeleccionada = accion;
+      escuelaSeleccionada = id_esc;
+      emailEscuela = email;
+      document.getElementById('modalTitulo').innerText =
+          accion === 'aprobar' ? 'Aprobar escuela' : 'Denegar escuela';
+      document.getElementById('modalAccion').style.display = 'flex';
+    }
+
+    function cerrarModal() {
+      document.getElementById('modalAccion').style.display = 'none';
+      document.getElementById('mensajeObservacion').value = '';
+    }
+
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
+          }
+      }
+      return cookieValue;
+    }
+
+    /* --- NOTIFICACIÓN --- */
+    function mostrarNotificacion(texto, tipo = 'ok') {
+      const box = document.getElementById('notificacion');
+      const msg = document.getElementById('notificacion-texto');
+      box.className = `notificacion ${tipo}`;
+      msg.textContent = texto;
+      box.style.display = 'flex';
+      setTimeout(() => { box.style.display = 'none'; }, 3000);
+    }
+
+    /* --- CONFIRMAR ACCIÓN --- */
+    document.getElementById('btnConfirmarAccion').addEventListener('click', async () => {
+      const mensaje = document.getElementById('mensajeObservacion').value;
+
+      const response = await fetch("{% url 'gestionar_solicitud' %}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+          id_esc: escuelaSeleccionada,
+          accion: accionSeleccionada,
+          email: emailEscuela,
+          mensaje: mensaje
+        })
+      });
+
+      if (response.ok) {
+        mostrarNotificacion('✅ Solicitud procesada correctamente.', 'ok');
+        cerrarModal();
+        setTimeout(() => location.reload(), 2000);
+      } else {
+        mostrarNotificacion('⚠️ Error al procesar la solicitud.', 'error');
+      }
+    });
+  </script>  
+
 </body>
 </html>
