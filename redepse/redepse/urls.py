@@ -14,14 +14,20 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.http import HttpResponse
 from django.contrib import admin
 from django.urls import path, include
-from apps.accounts.views import home_view
-
+from apps.accounts.views import home_view  # importás solo lo necesario
 
 urlpatterns = [
+    # Panel del administrador de Django (no tocar)
     path('admin/', admin.site.urls),
-     path('', home_view, name='home'),             # Página principal
-    path('accounts/', include('apps.accounts.urls')),  # Login, register, logout
+
+    # Página principal (home)
+    path('', home_view, name='home'),
+
+    # Rutas de la app principal (login, register, dashboard, etc.)
+    path('accounts/', include('apps.accounts.urls')),
+
+    # Prefijo "panel" para acceder a las rutas AJAX como ver_datos_escuela
+    path('panel/', include('apps.accounts.urls')),
 ]

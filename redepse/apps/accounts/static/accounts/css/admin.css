@@ -1,0 +1,202 @@
+/* ===== Layout general ===== */
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: #f4f6fa;
+    color: #333;
+}
+
+/* ===== Contenedor principal ===== */
+.dashboard-container {
+    display: flex;
+    height: 100vh;
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+    width: 240px;
+    background: linear-gradient(to bottom, #0066ff, #ff0040);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.sidebar .logo {
+    text-align: center;
+}
+
+.sidebar .logo img {
+    width: 80px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.sidebar h2 {
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.sidebar nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar nav ul li {
+    padding: 12px;
+    margin: 5px 0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.sidebar nav ul li:hover,
+.sidebar nav ul li.active {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.sidebar .logout {
+    text-align: center;
+}
+
+.sidebar .logout a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+/* ===== Contenido principal ===== */
+.content {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+/* ===== Header ===== */
+.content header h1 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+}
+
+/* ===== Sección de tabla ===== */
+.table-section {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.table-section .table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.table-section .filters input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-left: 10px;
+    font-size: 0.9rem;
+}
+
+/* ===== Tabla ===== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    font-size: 0.9rem;
+}
+
+/* ===== Botón Ver Datos ===== */
+.view-btn {
+    background: #007bff;
+    color: #fff;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 6px;
+    text-decoration: none; /* sin subrayado */
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.view-btn:hover {
+    background: #0056b3;
+    color: #fff;
+}
+
+/* ===== Cartas del panel de detalles ===== */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.card {
+    background: #f5f5f5;
+    border-radius: 10px;
+    text-align: center;
+    padding: 20px;
+    font-weight: bold;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.card:hover {
+    background: #007bff;
+    color: #fff;
+    transform: scale(1.05);
+}
+
+/* ===== Estado y botón volver ===== */
+.status {
+    margin-top: 25px;
+}
+
+.back-btn {
+    display: inline-block;
+    margin-top: 20px;
+    text-decoration: none;
+    font-weight: bold;
+    color: #007bff;
+}
+
+/* mostrar datos generales */
+
+.info-container {
+    margin-top: 30px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .info-container h3 {
+    margin-top: 0;
+    color: #007bff;
+  }
+  
+  .info-container p {
+    margin: 6px 0;
+    font-size: 0.95rem;
+  }
+  
+  .info-container {
+    display: none; /* 👈 oculto por defecto */
+    margin-top: 30px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  

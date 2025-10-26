@@ -1,0 +1,85 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Administración</title>
+    <link rel="stylesheet" href="{% static 'accounts/css/admin.css' %}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="{% static 'accounts/img/logo.jpeg' %}" alt="Logo">
+                <h2>REDEPSE</h2>
+            </div>
+            <nav>
+                <ul>
+                    <li class="active">Escuelas Registradas</li>
+                    <li>Solicitudes Pendientes</li>
+                    <li>Profesores</li>
+                    <li>Capacitaciones</li>
+                </ul>
+            </nav>
+            <div class="logout">
+                <a href="{% url 'logout' %}">Cerrar sesión</a>
+            </div>
+        </aside>
+
+        <!-- Contenido principal -->
+        <main class="content">
+            <header>
+                <h1>Administrador</h1>
+            </header>
+
+            <section class="table-section">
+                <div class="table-header">
+                    <h2>Escuelas Registradas</h2>
+                    <div class="filters">
+                        <input type="text" placeholder="Buscar por escuela">
+                        <input type="text" placeholder="Buscar por municipio">
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Escuela</th>
+                            <th>Localidad</th>
+                            <th>Tel. Escuela</th>
+                            <th>Tel. Responsable</th>
+                            <th>Correo</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in escuelas %}
+                            <tr>
+                                <td>{{ e.nombre_esc }}</td>
+                                <td>{{ e.localidad }}</td>
+                                <td>{{ e.telefono1 }}</td>
+                                <td>{{ e.telefono2|default:"—" }}</td>
+                                <td>{{ e.email }}</td>
+                                <td>
+                                    <a href="{% url 'detalle_escuela' e.id_esc %}" class="view-btn">Ver datos</a>
+                                  </td>
+                                  
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" style="text-align:center; color:#999;">No hay escuelas registradas.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    
+                    
+                </table>
+                
+            </section>
+        </main>
+    </div>
+
+        
+</body>
+</html>

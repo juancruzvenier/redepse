@@ -1,0 +1,131 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalles de Escuela</title>
+    <link rel="stylesheet" href="{% static 'accounts/css/admin.css' %}">
+</head>
+<body>
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <img src="{% static 'accounts/img/logo.jpeg' %}" alt="Logo">
+            <h2>REDEPSE</h2>
+        </div>
+        <nav>
+            <ul>
+                <li class="active">Escuelas Registradas</li>
+                <li>Solicitudes Pendientes</li>
+                <li>Profesores</li>
+                <li>Capacitaciones</li>
+            </ul>
+        </nav>
+        <div class="logout">
+            <a href="{% url 'logout' %}">Cerrar sesión</a>
+        </div>
+    </aside>
+
+    <!-- Contenido principal -->
+    <main class="content">
+        <header>
+            <h1>Administrador</h1>
+        </header>
+
+        <section class="school-details">
+            <h2>{{ escuela.nombre_esc }}</h2>
+
+            <!-- Botones principales -->
+            <div class="cards">
+                <div class="card" onclick="mostrarDatosGenerales()">Datos Generales</div>
+                <div class="card">Habilitaciones</div>
+                <div class="card">Disciplinas</div>
+                <div class="card" onclick="mostrarEntrenadores()">Entrenadores</div>
+                <div class="card">Alumnos</div>
+                <div class="card">Tutores</div>
+            </div>
+
+            <!-- Contenedor donde se mostrará la información dinámica -->
+            <div id="info-container" class="info-container"></div>
+
+            <div class="status">
+                <label for="estado">Estado</label>
+                <select id="estado" name="estado">
+                    <option {% if escuela.estado == 'Aprobada' %}selected{% endif %}>Aprobada</option>
+                    <option {% if escuela.estado == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                    <option {% if escuela.estado == 'Rechazada' %}selected{% endif %}>Rechazada</option>
+                </select>
+                <button>Guardar</button>
+            </div>
+
+            <a href="{% url 'admin_dashboard' %}" class="back-btn">⬅ Volver</a>
+        </section>
+    </main>
+</div>
+
+<!-- Scripts de funciones dinámicas -->
+<script>
+    function mostrarDatosGenerales() {
+      const data = {
+        nombre: "{{ escuela.nombre_esc }}",
+        localidad: "{{ escuela.localidad }}",
+        direccion: "{{ escuela.direccion }}",
+        estado: "{{ escuela.estado }}",
+        telefono1: "{{ escuela.telefono1 }}",
+        telefono2: "{{ escuela.telefono2|default:'—' }}",
+        email: "{{ escuela.email }}"
+      };
+    
+      const html = `
+        <div class="datos-generales">
+          <h3>Datos Generales</h3>
+          <p><strong>Nombre:</strong> ${data.nombre}</p>
+          <p><strong>Localidad:</strong> ${data.localidad}</p>
+          <p><strong>Dirección:</strong> ${data.direccion}</p>
+          <p><strong>Estado:</strong> ${data.estado}</p>
+          <p><strong>Tel. Escuela:</strong> ${data.telefono1}</p>
+          <p><strong>Tel. Responsable:</strong> ${data.telefono2}</p>
+          <p><strong>Correo:</strong> ${data.email}</p>
+        </div>
+      `;
+    
+      const info = document.getElementById("info-container");
+      info.innerHTML = html;
+      info.style.display = "block"; // 👈 se muestra recién cuando tocas una opción
+    }
+    
+    function mostrarEntrenadores() {
+      const entrenadores = [
+        {% for ent in entrenadores %}
+          {
+            nombre: "{{ ent.nombre }}",
+            apellido: "{{ ent.apellido }}",
+            email: "{{ ent.email }}",
+            telefono1: "{{ ent.telefono1 }}",
+            telefono2: "{{ ent.telefono2|default:'—' }}"
+          }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ];
+    
+      let html = "<h3>Entrenadores</h3>";
+    
+      if (entrenadores.length === 0) {
+        html += "<p>No hay entrenadores registrados para esta escuela.</p>";
+      } else {
+        html += "<ul>";
+        entrenadores.forEach(ent => {
+          html += `<li><strong>${ent.nombre} ${ent.apellido}</strong> — ${ent.email} — ${ent.telefono1}</li>`;
+        });
+        html += "</ul>";
+      }
+    
+      const info = document.getElementById("info-container");
+      info.innerHTML = html;
+      info.style.display = "block";
+    }
+    </script>
+    
+    </body>
+    </html>
+    
