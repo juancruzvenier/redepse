@@ -1,0 +1,16 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inicio - Usuario</title>
+    <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}">
+</head>
+<body>
+    <div class="auth-container">
+        <h1>Bienvenido {{ user.username }} 👋</h1>
+        <p>Has iniciado sesión como usuario normal.</p>
+        <a href="{% url 'logout' %}">Cerrar sesión</a>
+    </div>
+</body>
+</html>
