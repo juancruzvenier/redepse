@@ -11,7 +11,7 @@ class SolicitudAdmin(admin.ModelAdmin):
 
 @admin.register(Alumno)
 class AlumnoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nombre')
+    list_display = ('dni_alumno', 'nombre')
 
 @admin.register(Entrenador)
 class CursoAdmin(admin.ModelAdmin):

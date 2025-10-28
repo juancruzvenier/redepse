@@ -16,18 +16,24 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from apps.accounts.views import home_view  # importás solo lo necesario
+from django.views.generic import TemplateView
+
 
 urlpatterns = [
     # Panel del administrador de Django (no tocar)
     path('admin/', admin.site.urls),
 
     # Página principal (home)
-    path('', home_view, name='home'),
+    path('', TemplateView.as_view(template_name='home.html'), name='home'),
+
+    # Páginas estáticas renderizadas desde templates/
+    path('contacto/', TemplateView.as_view(template_name='contacto.html'), name='contacto'),
+    path('institucion/', TemplateView.as_view(template_name='institucion.html'), name='institucion'),
+
 
     # Rutas de la app principal (login, register, dashboard, etc.)
-    path('accounts/', include('apps.accounts.urls')),
+    path('accounts/', include(('apps.accounts.urls', 'accounts'), namespace='accounts')),
 
-    # Prefijo "panel" para acceder a las rutas AJAX como ver_datos_escuela
-    path('panel/', include('apps.accounts.urls')),
+    # Prefijo "panel" — incluir con namespace para evitar sobrescribir names globales
+    path('panel/', include(('apps.accounts.urls', 'apps.accounts'), namespace='panel')),
 ]
