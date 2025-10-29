@@ -26,8 +26,8 @@ def register_view(request):
             user.set_password(form.cleaned_data['password'])
             user.save()
             login(request, user)
-            messages.success(request, 'Cuenta creada con éxito.')
-            return redirect('home')
+            messages.success(request, 'Cuenta creada con éxito. Por favor, inicia sesión.')
+            return redirect('accounts:login')
         else:
             messages.error(request, 'Error al crear la cuenta. Verifica los datos ingresados.')
     else:
@@ -55,9 +55,9 @@ def login_view(request):
             login(request, user)
             messages.success(request, f'Bienvenido, {user.username} 👋')
             if user.is_superuser or user.is_staff:
-                return redirect('admin_dashboard')
+                return redirect('accounts:admin_dashboard')
             else:
-                return redirect('home')
+                return redirect('escuelas:wizard')
         else:
             messages.error(request, 'Correo o contraseña incorrectos.')
 
@@ -67,9 +67,10 @@ def login_view(request):
 # ====================================================
 # 🚪 Logout
 # ====================================================
+@login_required(login_url='login')
 def logout_view(request):
     logout(request)
-    return redirect('login')
+    return redirect('accounts:login')
 
 
 # ====================================================

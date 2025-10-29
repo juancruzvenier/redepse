@@ -36,4 +36,6 @@ urlpatterns = [
 
     # Prefijo "panel" — incluir con namespace para evitar sobrescribir names globales
     path('panel/', include(('apps.accounts.urls', 'apps.accounts'), namespace='panel')),
+
+    path('escuelas/', include(('apps.escuelas.urls', 'apps.escuelas'), namespace='escuelas')),
 ]

@@ -1,0 +1,113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Registro de Escuela</title>
+    <link rel="stylesheet" href="{% static 'escuelas/css/wizard.css' %}" />
+  </head>
+
+  <body>
+    <div class="dashboard-container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="logo">
+          <img src="{% static 'accounts/img/logo.jpeg' %}" alt="Logo" />
+          <h2>REDEPSE</h2>
+        </div>
+
+        <nav>
+          <ul>
+            <li>
+              <a
+                href="{% url 'escuelas:wizard' %}"
+                class="sidebar-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"
+              >
+                Datos de la Escuela
+              </a>
+            </li>
+            <li>
+              <a
+                href="{% url 'escuelas:wizard' %}"
+                class="sidebar-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"
+              >
+                Profesores
+              </a>
+            </li>
+            <li><a href="{% url 'escuelas:wizard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"">Alumnos</a></li>
+            <li><a href="{% url 'escuelas:wizard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">Carga de nota al secretario</a></li>
+          </ul>
+        </nav>
+
+        <div class="logout">
+          <a href="{% url 'accounts:logout' %}">Cerrar sesión</a>
+        </div>
+      </aside>
+
+      <!-- Contenido principal -->
+      <main class="content">
+        <header>
+          <h1>Registro de Escuela</h1>
+        </header>
+
+        <section class="table-section">
+          <h2 style="margin-bottom: 15px">Datos de la Escuela</h2>
+
+          <form method="post" class="form-registro">
+            {% csrf_token %} {{ wizard.management_form }}
+
+            <!-- Campos -->
+            <div class="form-grid">
+              {{ wizard.form.nombre_esc.errors }}
+              <div class="form-field">
+                <label for="{{ wizard.form.nombre_esc.id_for_label }}"
+                  >Nombre</label
+                >
+                {{ wizard.form.nombre_esc }}
+              </div>
+
+              <div class="form-field">
+                <label for="{{ wizard.form.localidad.id_for_label }}"
+                  >Localidad</label
+                >
+                {{ wizard.form.localidad }}
+              </div>
+
+              <div class="form-field">
+                <label for="{{ wizard.form.direccion.id_for_label }}"
+                  >Dirección</label
+                >
+                {{ wizard.form.direccion }}
+              </div>
+
+              <div class="form-field">
+                <label for="{{ wizard.form.telefono1.id_for_label }}"
+                  >Teléfono principal</label
+                >
+                {{ wizard.form.telefono1 }}
+              </div>
+
+              <div class="form-field">
+                <label for="{{ wizard.form.telefono2.id_for_label }}"
+                  >Teléfono alternativo</label
+                >
+                {{ wizard.form.telefono2 }}
+              </div>
+
+              <div class="form-field">
+                <label for="{{ wizard.form.email.id_for_label }}"
+                  >Correo electrónico</label
+                >
+                {{ wizard.form.email }}
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-aprobar">Siguiente</button>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

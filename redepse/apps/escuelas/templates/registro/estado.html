@@ -1,0 +1,33 @@
+{% extends "registro/base.html" %}
+
+{% block title %}Estado de la Solicitud{% endblock %}
+
+{% block content %}
+<h2 class="text-2xl font-bold mb-4">Estado de la Solicitud</h2>
+
+{% if escuela %}
+    <p><strong>Nombre de la Escuela:</strong> {{ escuela.nombre }}</p>
+    <p><strong>Solicitud enviada:</strong> {{ escuela.solicitud_enviada }}</p>
+
+    <h3 class="mt-4 font-bold">Entrenadores</h3>
+    <ul>
+        {% for ent in escuela.entrenador_set.all %}
+            <li>{{ ent.nombre }} {{ ent.apellido }}</li>
+        {% empty %}
+            <li>No hay entrenadores agregados</li>
+        {% endfor %}
+    </ul>
+
+    <h3 class="mt-4 font-bold">Alumnos</h3>
+    <ul>
+        {% for alum in escuela.alumno_set.all %}
+            <li>{{ alum.nombre }} {{ alum.apellido }}</li>
+        {% empty %}
+            <li>No hay alumnos agregados</li>
+        {% endfor %}
+    </ul>
+
+{% else %}
+    <p>No se encontró ninguna escuela asociada a tu usuario.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "registro/base.html" %}
+
+{% block title %}Alumnos{% endblock %}
+
+{% block content %}
+<h2 class="text-2xl font-bold mb-4">Agregar Alumnos</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ formset.management_form }}
+
+    {% for form in formset %}
+        <div class="border p-4 mb-2 bg-white">
+            {{ form.as_p }}
+            {% if form.DELETE %}
+                {{ form.DELETE }}
+                <label>Eliminar</label>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">
+        Guardar Alumnos y Finalizar
+    </button>
+</form>
+{% endblock %}
