@@ -84,8 +84,9 @@ class Entrenador(models.Model):
     apellido = models.CharField(max_length=50)
     domicilio = models.CharField(max_length=100, blank=True, null=True)
     email = models.CharField(max_length=100)
-    telefono1 = models.CharField(max_length=20)
-    telefono2 = models.CharField(max_length=20, blank=True, null=True)
+    telefono = models.CharField(max_length=20)
+    fecha_nac = models.DateField()
+    periodo = models.ForeignKey('Periodo', models.DO_NOTHING, db_column='id_periodo', blank=True, null=True)
 
     class Meta:
         managed = False
@@ -131,7 +132,7 @@ class Participacion(models.Model):
 
 
 class Periodo(models.Model):
-    id_periodo = models.IntegerField(primary_key=True)
+    periodo = models.IntegerField(primary_key=True, unique=True)
 
     class Meta:
         managed = False

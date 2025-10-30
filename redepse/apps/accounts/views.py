@@ -10,7 +10,7 @@ from django.db.models import Q
 import json
 
 from .forms import RegisterForm, LoginForm
-from redepse.models import (
+from apps.escuelas.models import (
     Escuela, Entrenador, EntDiscEscPer, Solicitudes,
     Alumno, Inscripcion, Tutor, Disciplina
 )
