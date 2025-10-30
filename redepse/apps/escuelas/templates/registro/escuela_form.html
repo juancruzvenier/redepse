@@ -21,20 +21,20 @@
             <li>
               <a
                 href="{% url 'escuelas:wizard' %}"
-                class="sidebar-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"
+                class="sidebar-link {% if request.resolver_match.url_name == 'wizard' %}active{% endif %}"
               >
                 Datos de la Escuela
               </a>
             </li>
             <li>
               <a
-                href="{% url 'escuelas:wizard' %}"
-                class="sidebar-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"
+                href="{% url 'escuelas:entrenadores' %}"
+                class="sidebar-link {% if request.resolver_match.url_name == 'entrenadores' %}active{% endif %}"
               >
-                Profesores
+                Entrenadores
               </a>
             </li>
-            <li><a href="{% url 'escuelas:wizard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"">Alumnos</a></li>
+            <li><a href="{% url 'escuelas:alumnos' %}" class="sidebar-link {% if request.resolver_match.url_name == 'alumnos_form' %}active{% endif %}"">Alumnos</a></li>
             <li><a href="{% url 'escuelas:wizard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">Carga de nota al secretario</a></li>
           </ul>
         </nav>
