@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto | SDE Deportes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/contacto.css">    <link rel="shortcut icon" href="../static/img/favicon-sde.png" type="image/x-icon">
+</head>
+
+<body>
+    <header class="header">
+        <nav>
+            <div class="logo">
+                <a href="{% url 'home' %}">
+                    <img src="../static/img/favicon-sde.png" alt="logo" width="50px"></a>
+            </div>
+            <ul>
+                <li><a href="{% url 'institucion' %}">INSTITUCION</a></li>
+                <li><a href="{% url 'accounts:home' %}">REDEPSE</a></li>
+                <li><a href="{% url 'contacto' %}">CONTACTO</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+
+        <section id="hero">
+            <div class="hero_content">
+                <h1>Contacto</h1>
+            </div>
+        </section>
+
+        <section id="contacto">
+            <div class="contacto">
+                <div class="contacto-text">
+                    <h2>¿Tienes alguna consulta?</h2>
+                    <p>Escribinos y te responderemos a la brevedad.</p>
+                </div>
+                <div class="formulario-contacto">
+                    <form action="https://formsubmit.co/juancruzvenier@gmail.com" method="post">
+                        <label for="nombre">Nombre:</label>
+                        <input type="text" id="nombre" name="nombre" required>
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" required>
+                        <label for="mensaje">Mensaje:</label>
+                        <textarea id="mensaje" name="mensaje" required></textarea>
+                        <button type="submit">Enviar</button>
+                    </form>
+
+                </div>
+            </div>
+        </section>
+
+        <section id="information">
+            <h2>INFORMACIÓN ÚTIL</h2>
+            <br>
+            <p>¿Qué estás buscando?</p>
+            <div class="information-cards">
+                <a class="card" href="{% url 'institucion' %}">
+                    <img src="../static/img/edificio.svg" alt="institucion">
+                    <h3>INSTITUCION</h3>
+                </a>
+
+                <a class="card" href="{% url 'accounts:home' %}">
+                    <img src="../static/img/futbol.svg" alt="Registrar Escuela">
+                    <h3>REGISTRAR ESCUELA</h3>
+                </a>
+
+            </div>
+        </section>
+
+    </main>
+
+    <footer id="footer">
+
+        <div class="footer">
+            <div class="footer-img">
+                <a href="../index.html"><img src="../static/img/favicon-sde.png"
+                        alt="Logo Secretaría de Deportes"></a>
+                <img src="../static/img/logo-sde.svg" alt="Santiago del Estero">
+            </div>
+            <div class="footer-datos">
+                <div class="footer-social">
+                    <h3>Seguinos en</h3>
+                    <a target="_blank" href="https://www.google.com/"><img src="../static/img/instagram.svg"
+                            alt="instagram"></a>
+                    <a target="_blank" href="https://www.google.com/"><img src="../static/img/facebook.svg"
+                            alt="facebook"></a>
+                    <a target="_blank" href="https://www.google.com/"><img src="../static/img/x.svg" alt="x"></a>
+                    <a target="_blank" href="https://www.google.com/"><img src="../static/img/youtube.svg"
+                            alt="youtube"></a>
+                </div>
+
+                <p>Calle Ficticia 123, Ciudad Capital<img width="12px" src="../static/img/location.svg" alt=""></p>
+                <p>(0385) 123-4567<img width="12px" src="../static/img/phone.svg" alt=""></p>
+                <p>deportes@correo.gob.ar<img width="12px" src="../static/img/email.svg" alt=""></p>
+            </div>
+        </div>
+        <div class="footer-copy">
+            <p>&copy; 2025 Secretaría de Deportes de la Provincia de Santiago del Estero | Desarrollado por <a
+                    href="https://github.com/juancruzvenier/redepse-v1/tree/test" target="_blank">alumnos del ITSE</a>.
+            </p>
+        </div>
+
+    </footer>
+
+    <script src="../static/js/blurryNav.js"></script>
+</body>
+
+</html>

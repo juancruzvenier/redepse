@@ -1,0 +1,143 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Escuelas Registradas</title>
+    <link rel="stylesheet" href="{% static 'accounts/css/admin.css' %}" />
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="logo">
+          <img src="{% static 'accounts/img/logo.jpeg' %}" alt="Logo" />
+          <h2>REDEPSE</h2>
+        </div>
+
+        <nav>
+          <ul>
+            <li>
+              <a
+                href="{% url 'accounts:admin_dashboard' %}"
+                class="sidebar-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"
+              >
+                Escuelas Registradas
+              </a>
+            </li>
+            <li>
+              <a
+                href="{% url 'accounts:solicitudes_pendientes' %}"
+                class="sidebar-link {% if request.resolver_match.url_name == 'solicitudes_pendientes' %}active{% endif %}"
+              >
+                Solicitudes Pendientes
+              </a>
+            </li>
+            <li><a href="#" class="sidebar-link">Profesores</a></li>
+            <li><a href="#" class="sidebar-link">Capacitaciones</a></li>
+          </ul>
+        </nav>
+
+        <div class="logout">
+          <a href="{% url 'accounts:logout' %}">Cerrar sesión</a>
+        </div>
+      </aside>
+
+      <!-- Contenido principal -->
+      <main class="content">
+        <header>
+          <h1>Administrador</h1>
+        </header>
+
+        <section class="table-section">
+          <div class="table-header">
+            <h2>Escuelas Registradas</h2>
+            <div class="filters">
+              <input type="text" placeholder="Buscar por escuela" />
+              <input type="text" placeholder="Buscar por municipio" />
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Escuela</th>
+                <th>Localidad</th>
+                <th>Tel. Escuela</th>
+                <th>Tel. Responsable</th>
+                <th>Correo</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for e in escuelas %}
+              <tr>
+                <td>{{ e.nombre_esc }}</td>
+                <td>{{ e.localidad }}</td>
+                <td>{{ e.telefono1 }}</td>
+                <td>{{ e.telefono2|default:"—" }}</td>
+                <td>{{ e.email }}</td>
+                <td>
+                  <a
+                    href="{% url 'accounts:detalle_escuela' e.id_esc %}?from=admin_dashboard"
+                    class="view-btn"
+                    >Ver datos</a
+                  >
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" style="text-align: center; color: #999">
+                  No hay escuelas registradas.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const inputEscuela = document.querySelector(
+          "input[placeholder='Buscar por escuela']"
+        );
+        const inputMunicipio = document.querySelector(
+          "input[placeholder='Buscar por municipio']"
+        );
+        const filas = document.querySelectorAll("tbody tr");
+        const tbody = document.querySelector("tbody");
+
+        function filtrar() {
+          const te = inputEscuela.value.trim().toLowerCase();
+          const tm = inputMunicipio.value.trim().toLowerCase();
+          let hay = false;
+
+          filas.forEach((fila) => {
+            const n = fila.cells[0].textContent.toLowerCase();
+            const l = fila.cells[1].textContent.toLowerCase();
+            const ok = (!te || n.includes(te)) && (!tm || l.includes(tm));
+            fila.style.display = ok ? "" : "none";
+            if (ok) hay = true;
+          });
+
+          const msg = document.getElementById("sin-resultados");
+          if (!hay) {
+            if (!msg) {
+              const m = document.createElement("tr");
+              m.id = "sin-resultados";
+              m.innerHTML = `<td colspan="6" style="text-align:center; color:#888;">No se encontraron escuelas</td>`;
+              tbody.appendChild(m);
+            }
+          } else if (msg) {
+            msg.remove();
+          }
+        }
+
+        inputEscuela.addEventListener("input", filtrar);
+        inputMunicipio.addEventListener("input", filtrar);
+      });
+    </script>
+  </body>
+</html>
