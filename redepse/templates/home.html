@@ -52,33 +52,53 @@
         </div>
       </section>
 
-      <section id="information">
-        <h2>INFORMACIÓN ÚTIL</h2>
-        <br />
-        <p>¿Qué estás buscando?</p>
-        <div class="information-cards">
-          <a class="card" href="pages/institucional.html">
-            <img src="../static/img/edificio.svg" alt="institucion" />
-            <h3>INSTITUCION</h3>
-          </a>
+        <section id="information">
+            <h2>INFORMACIÓN ÚTIL</h2>
+            <br>
+            <p>¿Qué estás buscando?</p>
+            <div class="information-cards">
+                <a class="card" href="{% url 'institucion' %}">
+                    <img src="../static/img/edificio.svg" alt="institucion">
+                    <h3>INSTITUCION</h3>
+                </a>
 
-          <a class="card" href="pages/redepse.html">
-            <img src="../static/img/futbol.svg" alt="Registrar Escuela" />
-            <h3>REGISTRAR ESCUELA</h3>
-          </a>
-        </div>
-      </section>
+                <a class="card" href="{% url 'accounts:register' %}">
+                    <img src="../static/img/futbol.svg" alt="Registrar Escuela">
+                    <h3>REGISTRAR ESCUELA</h3>
+                </a>
+            </div>
+        </section>
     </main>
 
     <footer id="footer">
-      <div class="footer">
-        <div class="footer-img">
-          <a href="index.html"
-            ><img
-              src="../static/img/favicon-sde.png"
-              alt="Logo Secretaría de Deportes"
-          /></a>
-          <img src="../static/img/logo-sde.svg" alt="Santiago del Estero" />
+
+        <div class="footer">
+            <div class="footer-img">
+                <a href="index.html"><img src="../static/img/favicon-sde.png" alt="Logo Secretaría de Deportes"></a>
+                <img src="../static/img/logo-sde.svg" alt="Santiago del Estero">
+            </div>
+            <div class="footer-datos">
+                <div class="footer-social">
+                    <h3>Seguinos en</h3>
+                    <a target="_blank" href="https://www.google.com/"><img src="../static/img/instagram.svg"
+                            alt="instagram"></a>
+                    <a target="_blank" href="https://www.google.com/"><img src="../static/img/facebook.svg"
+                            alt="facebook"></a>
+                    <a target="_blank" href="https://www.google.com/"><img src="../static/img/x.svg" alt="x"></a>
+                    <a target="_blank" href="https://www.google.com/"><img src="../static/img/youtube.svg"
+                            alt="youtube"></a>
+                </div>
+
+                <p>Calle Ficticia 123, Ciudad Capital<img width="12px" src="../static/img/location.svg" alt=""></p>
+                <p>(0385) 123-4567<img width="12px" src="../static/img/phone.svg" alt=""></p>
+                <p>deportes@correo.gob.ar<img width="12px" src="../static/img/email.svg" alt=""></p>
+            </div>
+        </div>
+        <div class="footer-copy">
+            <p>&copy; 2025 Secretaría de Deportes de la Provincia de Santiago del Estero | Desarrollado por <a
+                    href="https://github.com/juancruzvenier/redepse" target="_blank">alumnos del ITSE</a>.
+            </p>
+
         </div>
         <div class="footer-datos">
           <div class="footer-social">
@@ -134,5 +154,7 @@
     </footer>
 
     <script src="../static/js/blurryNav.js"></script>
-  </body>
+
+</body>
+
 </html>
