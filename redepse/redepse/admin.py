@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import *  # todos los modelos que quiera mostrar
+from apps.escuelas.models import *  # todos los modelos que quiera mostrar
 
 @admin.register(Escuela)
 class EscuelasAdmin(admin.ModelAdmin):
