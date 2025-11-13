@@ -33,7 +33,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-9a)dtl-!@%5jhcpy!*z%y
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = ['100.83.50.21', 'localhost','127.0.0.1', 'noted-perry-large-performed.trycloudflare.com']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
