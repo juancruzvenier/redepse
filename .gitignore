@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtualenv
+venv/
+env/
+*.env
+
+# Django
+*.sqlite3
+*.log
+/staticfiles/
+media/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# Ignorar el archivo de credenciales
+.env
