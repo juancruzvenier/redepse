@@ -48,12 +48,12 @@
             <br>
             <p>¿Qué estás buscando?</p>
             <div class="information-cards">
-                <a class="card" href="pages/institucional.html">
+                <a class="card" href="{% url 'institucion' %}">
                     <img src="../static/img/edificio.svg" alt="institucion">
                     <h3>INSTITUCION</h3>
                 </a>
 
-                <a class="card" href="pages/redepse.html">
+                <a class="card" href="{% url 'accounts:register' %}">
                     <img src="../static/img/futbol.svg" alt="Registrar Escuela">
                     <h3>REGISTRAR ESCUELA</h3>
                 </a>
@@ -87,7 +87,7 @@
         </div>
         <div class="footer-copy">
             <p>&copy; 2025 Secretaría de Deportes de la Provincia de Santiago del Estero | Desarrollado por <a
-                    href="https://github.com/juancruzvenier/redepse-v1/tree/test" target="_blank">alumnos del ITSE</a>.
+                    href="https://github.com/juancruzvenier/redepse" target="_blank">alumnos del ITSE</a>.
             </p>
         </div>
 

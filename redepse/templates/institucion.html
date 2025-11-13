@@ -23,7 +23,7 @@
             </div>
             <ul>
                 <li><a href="{% url 'institucion' %}">INSTITUCION</a></li>
-                <li><a href="{% url 'accounts:home' %}">REDEPSE</a></li>
+                <li><a href="{% url 'accounts:register' %}">REDEPSE</a></li>
                 <li><a href="{% url 'contacto' %}">CONTACTO</a></li>
             </ul>
         </nav>
@@ -111,7 +111,7 @@
                     <h3>CONTACTO</h3>
                 </a>
 
-                <a class="card" href="#">
+                <a class="card" href="{% url 'accounts:register' %}">
                     <img src="../static/img/futbol.svg" alt="Registrar Escuela">
                     <h3>REGISTRAR ESCUELA</h3>
                 </a>
@@ -147,7 +147,7 @@
         </div>
         <div class="footer-copy">
             <p>&copy; 2025 Secretaría de Deportes de la Provincia de Santiago del Estero | Desarrollado por <a
-                    href="https://github.com/juancruzvenier/redepse-v1/tree/test" target="_blank">alumnos del ITSE</a>.
+                    href="https://github.com/juancruzvenier/redepse" target="_blank">alumnos del ITSE</a>.
             </p>
         </div>
 
