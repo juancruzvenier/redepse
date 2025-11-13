@@ -103,6 +103,70 @@ def eliminar_entrenador(request, id):
 # ---------------------------------------
 # Formset para alumnos (paso independiente)
 # ---------------------------------------
+def alumnos_view(request):
+    form = AlumnoForm()
+    periodos = Periodo.objects.all().order_by("periodo")
+    return render(request, "registro/alumnos_form.html", {"form": form, "periodos": periodos})
+
+
+@csrf_exempt
+def alumnos_api(request):
+    if request.method == "GET":
+        # Obtener solo los entrenadores de la escuela del usuario actual
+        escuela = Escuela.objects.filter(user=request.user).first()
+        if escuela:
+            # Aquí necesitarías una relación entre Entrenador y Escuela
+            # Por ahora traemos todos, pero deberías filtrar
+            alumnos = list(Alumno.objects.values(
+                'dni_alumno', 'nombre', 'apellido', 'fecha_nac',
+                'domicilio', 'dni_tutor'
+            ))
+        else:
+            alumnos = []
+        return JsonResponse(alumnos, safe=False)
+
+    elif request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            
+            # Obtener la escuela del usuario actual
+            escuela = Escuela.objects.filter(user=request.user).first()
+            if not escuela:
+                return JsonResponse({'error': 'Primero debe registrar una escuela'}, status=400)
+            
+            # Crear el entrenador
+            alumno = Alumno.objects.create(
+                dni_alumno=data.get('dni_alumno'),
+                nombre=data.get('nombre'),
+                apellido=data.get('apellido'),
+                fecha_nac=data.get('fecha_nac'),
+                domicilio=data.get('domicilio', ''),
+                dni_tutor=data.get('dni_tutor')
+            )
+            
+            # Aquí deberías crear la relación en EntDiscEscPer
+            # Por ahora solo creamos el entrenador
+            return JsonResponse({
+                'success': True, 
+                'mensaje': 'Alumno registrado correctamente',
+                'dni_alumno': alumno.dni_alumno
+            })
+            
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+
+@csrf_exempt
+def eliminar_alumno(request, id):
+    if request.method == "DELETE":
+        try:
+            alumno = Alumno.objects.get(dni_alumno=id)  # Buscar por DNI
+            alumno.delete()
+            return JsonResponse({"success": True})
+        except Alumno.DoesNotExist:
+            return JsonResponse({"success": False, "error": "No encontrado"}, status=404)
+
+'''
 @login_required
 def alumnos_view(request):
     escuela = Escuela.objects.filter(solicitud_enviada=True, user=request.user).first()
@@ -125,7 +189,7 @@ def alumnos_view(request):
         formset = AlumnoFormSet(queryset=Alumno.objects.none())
 
     return render(request, "alumnos_form.html", {"formset": formset})
-
+'''
 
 
 # ---------------------------------------
