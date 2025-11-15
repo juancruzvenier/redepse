@@ -35,7 +35,7 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = ['*']
 
-CSRF_TRUSTED_ORIGINS = ['https://degrees-pediatric-award-mentor.trycloudflare.com']
+CSRF_TRUSTED_ORIGINS = ['https://conversations-transform-perfectly-message.trycloudflare.com']
 
 # Application definition
 
