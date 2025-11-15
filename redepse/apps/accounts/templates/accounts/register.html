@@ -12,6 +12,8 @@
     <div class="auth-container">
         <img src="{% static 'accounts/img/logo.jpeg' %}" alt="Logo">
         <h1>Crear cuenta</h1>
+        <h2>Escuelas de Formación Deportiva</h2>
+        <p>Complete los siguientes campos:</p>
 
         {% if messages %}
         <div class="messages">
@@ -33,7 +35,7 @@
 
         <form method="POST">
             {% csrf_token %}
-            <input type="text" name="username" placeholder="Nombre de usuario" required>
+            <input type="text" name="username" placeholder="Nombre de usuario. ej: escuelasantiago" required>
             <input type="email" name="email" placeholder="Correo electrónico" required>
             <input type="password" name="password" placeholder="Contraseña" required>
             <input type="password" name="password2" placeholder="Confirmar contraseña" required>

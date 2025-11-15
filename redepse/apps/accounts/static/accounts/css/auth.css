@@ -1,12 +1,13 @@
 /* Fondo con gradiente azul a rojo */
 body {
     margin: 0;
-    height: 100vh;
+    min-height: 100vh;           /* permite scroll correcto en móviles */
     background: linear-gradient(to right, #0066ff, #ff0040);
     display: flex;
     justify-content: center;
     align-items: center;
     font-family: 'Poppins', sans-serif;
+    padding: 20px;               /* separación lateral en pantallas pequeñas */
 }
 
 /* Contenedor principal */
@@ -16,7 +17,9 @@ body {
     border-radius: 15px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     text-align: center;
-    width: 380px;
+    width: 100%;
+    max-width: 420px;            /* adaptativo: ocupa el ancho disponible hasta 420px */
+    box-sizing: border-box;
 }
 
 /* Logo */
@@ -31,6 +34,10 @@ body {
     margin-bottom: 25px;
     color: #111;
     font-weight: 700;
+}
+
+.auth-container h2, h3 {
+    font-size: 1rem;
 }
 
 /* Inputs */
@@ -67,8 +74,18 @@ body {
     box-sizing: border-box;
 }
 
-.auth-container input[type="submit"]:hover {
-    background-color: #0056d6;
+/* Mejora accesibilidad táctil: botones más grandes en móviles */
+.auth-container input[type="submit"] {
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    box-sizing: border-box;
 }
 
 /* Enlaces */
@@ -130,4 +147,48 @@ body {
 
 .messages p {
     animation: fadeIn 0.3s ease;
+}
+
+/* ===================== */
+/* Responsive: tablets y móviles */
+/* ===================== */
+@media (max-width: 768px) {
+    .auth-container {
+        padding: 32px 28px;
+        max-width: 480px;
+    }
+    .auth-container h1 {
+        font-size: 1.3rem;
+    }
+    .auth-container img {
+        width: 80px;
+    }
+    .auth-container input[type="text"],
+    .auth-container input[type="email"],
+    .auth-container input[type="password"] {
+        padding: 12px;
+        font-size: 1rem;
+    }
+    .messages p { height: auto; padding: 10px; }
+}
+
+@media (max-width: 480px) {
+    body { padding: 14px; }
+    .auth-container {
+        padding: 22px 16px;
+        border-radius: 12px;
+    }
+    .auth-container img { width: 70px; margin-bottom: 12px; }
+    .auth-container h1 { font-size: 1.1rem; margin-bottom: 18px; }
+    .auth-container input[type="text"],
+    .auth-container input[type="email"],
+    .auth-container input[type="password"] {
+        padding: 10px;
+        font-size: 0.96rem;
+    }
+    .auth-container input[type="submit"] {
+        padding: 12px;
+        font-size: 0.98rem;
+    }
+    .messages p { font-size: 0.95rem; }
 }
