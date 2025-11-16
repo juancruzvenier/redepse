@@ -1,15 +1,18 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Iniciar sesión</title>
     <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}" />
   </head>
   <body>
     <div class="auth-container">
-      <img src="{% static 'accounts/img/logo.jpeg' %}" alt="Logo" />
-      <h1>REDEPSE</h1>
+      <img src="{% static 'accounts/img/LOGO_REDEPSE.png' %}" alt="Logo" />
+      <h1>Iniciar Sesión</h1>
 
       {% if messages %}
       <div class="messages">
