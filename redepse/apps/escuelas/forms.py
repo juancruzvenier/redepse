@@ -77,4 +77,25 @@ class EntrenadorForm(forms.ModelForm):
 class AlumnoForm(forms.ModelForm):
     class Meta:
         model = Alumno
+        fields = [
+            "dni_alumno", "nombre", "apellido", "fecha_nac",
+            "domicilio", "dni_tutor"
+        ]
+        widgets = {
+            "fecha_nac": forms.DateInput(attrs={"type": "date", "max": date.today()}),
+       #     "periodo": forms.Select(attrs={"class": "form-control"})  # Añadir widget
+        }
+
+    def clean_dni_alumno(self):
+        dni = self.cleaned_data["dni_alumno"]
+        if Alumno.objects.filter(dni_alumno=dni).exists():
+            raise forms.ValidationError("Este DNI ya está registrado.")
+        return dni
+
+
+'''
+class AlumnoForm(forms.ModelForm):
+    class Meta:
+        model = Alumno
         fields = ['nombre', 'apellido', 'dni_alumno', 'fecha_nac']
+'''

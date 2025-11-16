@@ -17,12 +17,11 @@ class Alumno(models.Model):
     apellido = models.CharField(max_length=50)
     fecha_nac = models.DateField()
     domicilio = models.CharField(max_length=100, blank=True, null=True)
-    estado = models.CharField(max_length=20)
     dni_tutor = models.IntegerField(blank=True, null=True)
-    id_periodo = models.ForeignKey('Periodo', models.DO_NOTHING, db_column='id_periodo', blank=True, null=True)
 
     class Meta:
-        db_table = 'alumnos'
+        db_table = 'alumno'
+
 
 
 class Capacitacion(models.Model):
@@ -40,7 +39,7 @@ class Disciplina(models.Model):
     disciplina = models.CharField(max_length=50)
 
     class Meta:
-        db_table = 'disciplinas'
+        db_table = 'disciplina'
 
 
 class Empleado(models.Model):
@@ -62,7 +61,7 @@ class EntDiscEscPer(models.Model):
     id_periodo = models.ForeignKey('Periodo', models.DO_NOTHING, db_column='id_periodo', blank=True, null=True)
 
     class Meta:
-        db_table = 'ent_disc_esc_periodo'
+        db_table = 'ent_disc_esc_per'
 
 
 class Entrenador(models.Model):
@@ -71,12 +70,19 @@ class Entrenador(models.Model):
     apellido = models.CharField(max_length=50)
     domicilio = models.CharField(max_length=100, blank=True, null=True)
     email = models.CharField(max_length=100)
-    telefono = models.CharField(max_length=20)
+    telefono = models.CharField(max_length=20)  # ✔ AHORA EXISTE
     fecha_nac = models.DateField()
-    periodo = models.ForeignKey('Periodo', models.DO_NOTHING, db_column='id_periodo', blank=True, null=True)
+    periodo = models.ForeignKey(
+        'Periodo',
+        models.DO_NOTHING,
+        db_column='periodo',  # ✔ columna de tu BD real
+        blank=True,
+        null=True
+    )
 
     class Meta:
-        db_table = 'entrenadores'
+        db_table = 'entrenador'
+
 
 
 class Escuela(models.Model):
@@ -92,7 +98,7 @@ class Escuela(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
-        db_table = 'escuelas'
+        db_table = 'escuela'
 
 
 class Inscripcion(models.Model):
@@ -101,7 +107,7 @@ class Inscripcion(models.Model):
     id_esc = models.ForeignKey(Escuela, models.DO_NOTHING, db_column='id_esc')
 
     class Meta:
-        db_table = 'inscripciones'
+        db_table = 'inscripcion'
 
 
 class Participacion(models.Model):
@@ -140,7 +146,7 @@ class Solicitudes(models.Model):
     estado = models.CharField(max_length=9, blank=True, null=True)
 
     class Meta:
-        db_table = 'solicitudess'
+        db_table = 'solicitudes'
 
 
 class Tutor(models.Model):
@@ -153,7 +159,7 @@ class Tutor(models.Model):
     telefono2 = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
-        db_table = 'tutores'
+        db_table = 'tutor'
 
 
 class Usuario(models.Model):
