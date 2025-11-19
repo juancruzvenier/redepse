@@ -1,0 +1,167 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro de Escuela - REDEPSE</title>
+    <link rel="stylesheet" href="{% static 'escuelas/css/wizard.css' %}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="{% static 'accounts/img/logo.jpeg' %}" alt="Logo" />
+                <h2>REDEPSE</h2>
+            </div>
+
+            <nav>
+                <ul>
+                    {% for paso in pasos %}
+                    <li>
+                        <a href="{% url 'escuelas:registro_wizard' paso.url %}" 
+                           class="sidebar-link {% if paso.url == paso_actual %}active{% endif %}">
+                            {{ paso.numero }}. {{ paso.nombre }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+
+            <div class="logout">
+                <a href="{% url 'accounts:logout' %}">Cerrar sesión</a>
+            </div>
+        </aside>
+
+        <!-- Contenido principal -->
+        <main class="content">
+            <header>
+                <h1>Registro de Escuela</h1>
+                <h2>Paso {{ paso_numero }} de {{ total_pasos }}: {% for p in pasos %}{% if p.url == paso_actual %}{{ p.nombre }}{% endif %}{% endfor %}</h2>
+            </header>
+
+            
+            <!-- Toast para mensajes -->
+            <div id="toast" class="toast" style="display: none;"></div>
+
+            <section class="table-section">
+                {% block paso_content %}
+                {% endblock %}
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Clave única para localStorage
+        const STORAGE_KEY = 're-depse_escuela_registro_{{ request.user.id }}';
+        
+        // Toast functions
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.style.display = 'block';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        // Guardar en localStorage
+        function guardarEnLocalStorage(datos) {
+            const datosExistentes = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+            const datosActualizados = { ...datosExistentes, ...datos };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(datosActualizados));
+        }
+
+        // Cargar desde localStorage
+        function cargarDesdeLocalStorage() {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        }
+
+        // Limpiar localStorage
+        function limpiarLocalStorage() {
+            localStorage.removeItem(STORAGE_KEY);
+        }
+
+        // Verificar cambios en formularios
+        function configurarDeteccionCambios(formId, btnGuardarId) {
+            const form = document.getElementById(formId);
+            const btnGuardar = document.getElementById(btnGuardarId);
+            
+            if (form && btnGuardar) {
+                let datosOriginales = new FormData(form);
+                
+                function verificarCambios() {
+                    const datosActuales = new FormData(form);
+                    let hayCambios = false;
+                    
+                    for (let [key, value] of datosOriginales.entries()) {
+                        if (datosActuales.get(key) !== value) {
+                            hayCambios = true;
+                            break;
+                        }
+                    }
+                    
+                    btnGuardar.disabled = !hayCambios;
+                    if (hayCambios) {
+                        btnGuardar.classList.remove('btn-guardar');
+                        btnGuardar.classList.add('btn-aprobar');
+                    } else {
+                        btnGuardar.classList.remove('btn-aprobar');
+                        btnGuardar.classList.add('btn-guardar');
+                    }
+                }
+                
+                form.addEventListener('input', verificarCambios);
+                form.addEventListener('change', verificarCambios);
+                
+                // Actualizar datos originales después de guardar
+                btnGuardar.addEventListener('click', function() {
+                    datosOriginales = new FormData(form);
+                });
+            }
+        }
+
+        // Validar campos requeridos
+        function validarCamposRequeridos(formId) {
+            const form = document.getElementById(formId);
+            const inputs = form.querySelectorAll('[required]');
+            const todosLlenos = Array.from(inputs).every(input => {
+                if (input.type === 'file') return input.files.length > 0;
+                if (input.type === 'checkbox') {
+                    const checkboxes = form.querySelectorAll(`[name="${input.name}"]:checked`);
+                    return checkboxes.length > 0;
+                }
+                return input.value.trim() !== '';
+            });
+            return todosLlenos;
+        }
+
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cargar datos guardados para prellenar formularios
+            const datosGuardados = cargarDesdeLocalStorage();
+            
+            // Configurar cada paso según sea necesario
+            const pasoActual = '{{ paso_actual }}';
+            
+            if (pasoActual === 'escuela') {
+                // Prellenar datos de escuela
+                const escuelaData = datosGuardados.escuela || {};
+                for (const [key, value] of Object.entries(escuelaData)) {
+                    const field = document.querySelector(`[name="${key}"]`);
+                    if (field) field.value = value;
+                }
+                
+                configurarDeteccionCambios('formEscuela', 'btnGuardarEscuela');
+            }
+            
+            // Configuración similar para otros pasos...
+        });
+    </script>
+
+    {% block extra_scripts %}
+    {% endblock %}
+</body>
+</html>

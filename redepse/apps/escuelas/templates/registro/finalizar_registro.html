@@ -1,0 +1,43 @@
+{% extends "registro/wizard_base.html" %}
+{% load static %}
+
+{% block form_content %}
+<h2 style="margin-bottom: 15px">Datos de la Escuela</h2>
+
+<div class="form-grid">
+    {% for field in wizard.form %}
+        <div class="form-field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+                <div class="error-message" style="color: #e84118; font-size: 0.8rem; margin-top: 5px;">
+                    {{ field.errors }}
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+<!-- En el último paso -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('wizardForm');
+    
+    form.addEventListener('submit', function(e) {
+        // Obtener todos los datos del localStorage
+        const datosCompletos = JSON.parse(localStorage.getItem(FORM_STORAGE_KEY) || '{}');
+        
+        // Agregar como campo hidden al formulario
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'datos_completos';
+        hiddenInput.value = JSON.stringify(datosCompletos);
+        form.appendChild(hiddenInput);
+        
+        // Limpiar localStorage después de enviar
+        setTimeout(() => {
+            localStorage.removeItem(FORM_STORAGE_KEY);
+        }, 1000);
+    });
+});
+</script>
+{% endblock %}

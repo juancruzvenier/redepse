@@ -1,6 +1,17 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+class Documento(models.Model):
+    id_documento = models.AutoField(primary_key=True)
+    id_esc = models.ForeignKey('Escuela', models.DO_NOTHING, db_column='id_esc')
+    documento = models.FileField(upload_to='documentos/')
+    fecha_subida = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'documentos'
+
+# Tus otros modelos permanecen igual...
+
 class AluDiscEscPer(models.Model):
     dni_alumno = models.ForeignKey('Alumno', models.DO_NOTHING, db_column='dni_alumno', blank=True, null=True)
     id_disciplina = models.ForeignKey('Disciplina', models.DO_NOTHING, db_column='id_disciplina', blank=True, null=True)

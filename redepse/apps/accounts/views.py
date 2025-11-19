@@ -57,7 +57,7 @@ def login_view(request):
             if user.is_superuser or user.is_staff:
                 return redirect('accounts:admin_dashboard')
             else:
-                return redirect('escuelas:wizard')
+                return redirect('escuelas:registro_wizard', paso='escuela')
         else:
             messages.error(request, 'Correo o contraseña incorrectos.')
 
