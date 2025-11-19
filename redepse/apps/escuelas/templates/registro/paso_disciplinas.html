@@ -1,0 +1,118 @@
+{% extends "registro/wizard_base.html" %}
+{% load static %}
+
+{% block paso_content %}
+<form id="formDisciplinas" class="form-registro">
+    {% csrf_token %}
+    
+    <div class="form-field">
+        <label>Seleccione las disciplinas que impartirá *</label>
+        <div class="disciplina-list">
+            {% for disciplina in disciplinas %}
+            <div class="disciplina-item">
+                <input type="checkbox" id="disciplina_{{ disciplina.id_disciplina }}" 
+                       name="disciplinas" value="{{ disciplina.id_disciplina }}" 
+                       class="disciplina-checkbox">
+                <label for="disciplina_{{ disciplina.id_disciplina }}" style="margin-left: 8px; cursor: pointer;">
+                    {{ disciplina.disciplina }}
+                </label>
+            </div>
+            {% empty %}
+            <p style="color: #e84118; text-align: center; padding: 20px;">
+                No hay disciplinas disponibles en la base de datos.
+            </p>
+            {% endfor %}
+        </div>
+        <small style="color: #666;">Seleccione al menos una disciplina</small>
+    </div>
+
+    <div class="form-actions">
+        <button type="button" class="btn-denegar" onclick="anteriorPaso()">
+            ← Anterior
+        </button>
+        <button type="button" id="btnGuardarDisciplinas" class="btn-guardar" onclick="guardarDisciplinas()">
+            Guardar
+        </button>
+        <button type="button" id="btnSiguienteDisciplinas" class="btn-siguiente" onclick="siguientePaso()" disabled>
+            Siguiente →
+        </button>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    let disciplinasGuardadas = false;
+
+    function anteriorPaso() {
+        window.location.href = "{% url 'escuelas:registro_wizard' 'documentacion' %}";
+    }
+
+    function guardarDisciplinas() {
+        const checkboxes = document.querySelectorAll('input[name="disciplinas"]:checked');
+        
+        if (checkboxes.length === 0) {
+            showToast('Seleccione al menos una disciplina', 'error');
+            return;
+        }
+
+        const disciplinasIds = Array.from(checkboxes).map(cb => cb.value);
+        const disciplinasNombres = Array.from(checkboxes).map(cb => {
+            return cb.nextElementSibling.textContent.trim();
+        });
+
+        guardarEnLocalStorage({
+            disciplinas: {
+                ids: disciplinasIds,
+                nombres: disciplinasNombres
+            }
+        });
+        
+        disciplinasGuardadas = true;
+        
+        // Actualizar estado de botones
+        document.getElementById('btnGuardarDisciplinas').disabled = true;
+        document.getElementById('btnSiguienteDisciplinas').disabled = false;
+        document.getElementById('btnSiguienteDisciplinas').classList.remove('btn-siguiente');
+        document.getElementById('btnSiguienteDisciplinas').classList.add('btn-aprobar');
+        
+        showToast('Disciplinas guardadas correctamente');
+    }
+
+    function siguientePaso() {
+        if (disciplinasGuardadas) {
+            window.location.href = "{% url 'escuelas:registro_wizard' 'entrenadores' %}";
+        } else {
+            showToast('Debe guardar las disciplinas antes de continuar', 'error');
+        }
+    }
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', function() {
+        const datosGuardados = cargarDesdeLocalStorage();
+        if (datosGuardados.disciplinas) {
+            // Pre-seleccionar checkboxes
+            datosGuardados.disciplinas.ids.forEach(id => {
+                const checkbox = document.querySelector(`input[value="${id}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+            disciplinasGuardadas = true;
+            document.getElementById('btnSiguienteDisciplinas').disabled = false;
+            document.getElementById('btnSiguienteDisciplinas').classList.remove('btn-siguiente');
+            document.getElementById('btnSiguienteDisciplinas').classList.add('btn-aprobar');
+        }
+
+        // Configurar detección de cambios
+        const checkboxes = document.querySelectorAll('input[name="disciplinas"]');
+        const btnGuardar = document.getElementById('btnGuardarDisciplinas');
+        
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                btnGuardar.disabled = false;
+                btnGuardar.classList.remove('btn-guardar');
+                btnGuardar.classList.add('btn-aprobar');
+            });
+        });
+    });
+</script>
+{% endblock %}

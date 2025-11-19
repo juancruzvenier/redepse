@@ -458,3 +458,339 @@ html {
   cursor: pointer;
   transition: 0.3s;
 }
+
+/* ===== Barra de progreso ===== */
+.progress-container {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.progress-bar {
+  background: #f0f0f0;
+  border-radius: 10px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.progress {
+  background: linear-gradient(90deg, #0066ff, #ff0040);
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+/* ===== Estados de los campos ===== */
+.form-field input:valid,
+.form-field select:valid,
+.form-field textarea:valid {
+  border-color: #00b894;
+}
+
+.form-field input:invalid:not(:focus):not(:placeholder-shown),
+.form-field select:invalid:not(:focus),
+.form-field textarea:invalid:not(:focus):not(:placeholder-shown) {
+  border-color: #e84118;
+}
+
+/* ===== Checkbox personalizado ===== */
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+}
+
+/* ===== Botones de estado ===== */
+.btn-guardar {
+  background: linear-gradient(90deg, #6c757d, #868e96) !important;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 1rem;
+  color: #fff;
+  cursor: not-allowed;
+  opacity: 0.6;
+  transition: all 0.3s;
+  margin-right: 10px;
+}
+
+.btn-siguiente {
+  background: linear-gradient(90deg, #6c757d, #868e96) !important;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 1rem;
+  color: #fff;
+  cursor: not-allowed;
+  opacity: 0.6;
+  transition: all 0.3s;
+}
+
+.btn-guardar:not(:disabled):not(.btn-aprobar),
+.btn-siguiente:not(:disabled):not(.btn-aprobar) {
+  cursor: not-allowed;
+}
+
+.btn-aprobar:not(:disabled) {
+  cursor: pointer !important;
+  opacity: 1 !important;
+}
+
+.btn-aprobar:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 0 8px rgba(0, 184, 148, 0.6);
+}
+
+/* ===== Botón Anterior siempre activo ===== */
+.btn-denegar {
+  cursor: pointer !important;
+  opacity: 1 !important;
+}
+
+.btn-denegar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 8px rgba(232, 65, 24, 0.6);
+}
+
+/* ===== Estados de campos ===== */
+.form-field input:valid,
+.form-field select:valid,
+.form-field textarea:valid {
+  border-color: #00b894;
+}
+
+.form-field input:invalid:not(:focus):not(:placeholder-shown),
+.form-field select:invalid:not(:focus),
+.form-field textarea:invalid:not(:focus):not(:placeholder-shown) {
+  border-color: #e84118;
+}
+
+/* ===== Checkbox personalizado ===== */
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+}
+
+/* ===== Botones de estado ===== */
+.btn-guardar {
+  background: linear-gradient(90deg, #6c757d, #868e96) !important;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 1rem;
+  color: #fff;
+  cursor: not-allowed;
+  opacity: 0.6;
+  transition: all 0.3s;
+  margin-right: 10px;
+}
+
+.btn-siguiente {
+  background: linear-gradient(90deg, #6c757d, #868e96) !important;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 1rem;
+  color: #fff;
+  cursor: not-allowed;
+  opacity: 0.6;
+  transition: all 0.3s;
+}
+
+.btn-guardar:not(:disabled),
+.btn-siguiente:not(:disabled) {
+  cursor: pointer;
+  opacity: 1;
+}
+
+.btn-aprobar:not(:disabled) {
+  cursor: pointer !important;
+  opacity: 1 !important;
+}
+
+.btn-aprobar:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 0 8px rgba(0, 184, 148, 0.6);
+}
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #00b894;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  animation: slideIn 0.3s ease;
+}
+
+.toast.error {
+  background: #e84118;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ===== Checkboxes de disciplinas ===== */
+.disciplina-checkbox {
+  margin-right: 8px;
+}
+
+.disciplina-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.disciplina-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.disciplina-item:hover {
+  background-color: #f8f9fa;
+}
+
+/* ===== Tablas para entrenadores, tutores, alumnos ===== */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.data-table th,
+.data-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.data-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.btn-eliminar {
+  background: #e84118;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-eliminar:hover {
+  background: #c23616;
+}
+
+/* ===== Estados de campos ===== */
+.form-field input:valid,
+.form-field select:valid {
+  border-color: #00b894;
+}
+
+.form-field input:invalid:not(:focus):not(:placeholder-shown),
+.form-field select:invalid:not(:focus) {
+  border-color: #e84118;
+}
+
+/* ===== Estilos para el resumen final ===== */
+.resumen-section {
+  margin-bottom: 25px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+.resumen-section h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #0066ff;
+  border-bottom: 2px solid #0066ff;
+  padding-bottom: 5px;
+}
+
+.resumen-datos p {
+  margin: 5px 0;
+}
+
+.badge {
+  display: inline-block;
+  background: #0066ff;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  margin: 2px;
+  font-size: 0.9rem;
+}
+
+/* ===== Mensaje de no datos ===== */
+.no-data {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 20px;
+  display: none;
+}
+
+/* ===== Mejoras responsive ===== */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+  }
+
+  .content {
+    padding: 15px;
+  }
+}
+
+/* ===== Estados de carga ===== */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* ===== Mejoras visuales ===== */
+.form-field input:focus,
+.form-field select:focus {
+  border-color: #0066ff;
+  box-shadow: 0 0 5px rgba(0, 102, 255, 0.3);
+  outline: none;
+}
+
+.table-section {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}

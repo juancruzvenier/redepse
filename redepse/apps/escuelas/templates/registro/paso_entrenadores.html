@@ -1,0 +1,235 @@
+{% extends "registro/wizard_base.html" %}
+{% load static %}
+
+{% block paso_content %}
+<form id="formEntrenador" class="form-registro">
+    {% csrf_token %}
+    
+    <h3 style="margin-bottom: 20px;">Registrar Entrenador</h3>
+    
+    <div class="form-grid">
+        <div class="form-field">
+            <label for="dni_ent">DNI *</label>
+            <input type="number" id="dni_ent" name="dni_ent" class="form-control" required 
+                   placeholder="Ej: 40123456" min="1000000" max="99999999">
+        </div>
+
+        <div class="form-field">
+            <label for="nombre">Nombre *</label>
+            <input type="text" id="nombre" name="nombre" class="form-control" required 
+                   placeholder="Ej: Juan">
+        </div>
+
+        <div class="form-field">
+            <label for="apellido">Apellido *</label>
+            <input type="text" id="apellido" name="apellido" class="form-control" required 
+                   placeholder="Ej: Pérez">
+        </div>
+
+        <div class="form-field">
+            <label for="fecha_nac">Fecha de nacimiento *</label>
+            <input type="date" id="fecha_nac" name="fecha_nac" class="form-control" required 
+                   max="{{ hoy }}">
+        </div>
+
+        <div class="form-field">
+            <label for="email">Correo electrónico</label>
+            <input type="email" id="email" name="email" class="form-control" 
+                   placeholder="ejemplo@email.com">
+        </div>
+
+        <div class="form-field">
+            <label for="telefono">Teléfono</label>
+            <input type="tel" id="telefono" name="telefono" class="form-control" 
+                   placeholder="Ej: 3854123456" pattern="[0-9]+">
+        </div>
+
+        <div class="form-field">
+            <label for="domicilio">Domicilio</label>
+            <input type="text" id="domicilio" name="domicilio" class="form-control" 
+                   placeholder="Ej: Calle Principal 123">
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="button" class="btn-denegar" onclick="anteriorPaso()">
+            ← Anterior
+        </button>
+        <button type="button" id="btnRegistrarEntrenador" class="btn-aprobar" onclick="registrarEntrenador()">
+            Registrar Entrenador
+        </button>
+    </div>
+</form>
+
+<!-- Tabla de entrenadores registrados -->
+<div id="tablaContainer" class="table-section" style="margin-top: 30px;">
+    <h3>Entrenadores Registrados</h3>
+    <table id="tablaEntrenadores" class="data-table">
+        <thead>
+            <tr>
+                <th>DNI</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Fecha Nac.</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>Domicilio</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tbodyEntrenadores">
+            <!-- Los entrenadores se cargarán aquí dinámicamente -->
+        </tbody>
+    </table>
+    <p id="noDataEntrenadores" class="no-data">Aún no hay entrenadores registrados</p>
+</div>
+
+<div class="form-actions" style="margin-top: 20px;">
+    <button type="button" id="btnSiguienteEntrenadores" class="btn-siguiente" onclick="siguientePaso()" disabled>
+        Siguiente →
+    </button>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const hoy = new Date().toISOString().split('T')[0];
+    document.getElementById('fecha_nac').max = hoy;
+
+    function anteriorPaso() {
+        window.location.href = "{% url 'escuelas:registro_wizard' 'disciplinas' %}";
+    }
+
+    function registrarEntrenador() {
+        const form = document.getElementById('formEntrenador');
+        const formData = new FormData(form);
+        
+        // Validar campos requeridos
+        const camposRequeridos = ['dni_ent', 'nombre', 'apellido', 'fecha_nac'];
+        for (let campo of camposRequeridos) {
+            if (!formData.get(campo)) {
+                showToast(`Complete el campo ${campo}`, 'error');
+                return;
+            }
+        }
+
+        // Crear objeto entrenador
+        const entrenador = {};
+        for (let [key, value] of formData.entries()) {
+            entrenador[key] = value;
+        }
+
+        // Obtener entrenadores existentes
+        const datosGuardados = cargarDesdeLocalStorage();
+        const entrenadores = datosGuardados.entrenadores || [];
+
+        // Verificar DNI duplicado
+        if (entrenadores.some(e => e.dni_ent === entrenador.dni_ent)) {
+            showToast('Ya existe un entrenador con este DNI', 'error');
+            return;
+        }
+
+        // Agregar nuevo entrenador
+        entrenadores.push(entrenador);
+        guardarEnLocalStorage({ entrenadores: entrenadores });
+
+        // Limpiar formulario
+        form.reset();
+
+        // Actualizar tabla
+        actualizarTablaEntrenadores();
+
+        // Habilitar siguiente si hay al menos un entrenador
+        if (entrenadores.length > 0) {
+            document.getElementById('btnSiguienteEntrenadores').disabled = false;
+            document.getElementById('btnSiguienteEntrenadores').classList.remove('btn-siguiente');
+            document.getElementById('btnSiguienteEntrenadores').classList.add('btn-aprobar');
+        }
+
+        showToast('Entrenador registrado correctamente');
+    }
+
+    function eliminarEntrenador(dni) {
+        if (!confirm('¿Está seguro de eliminar este entrenador?')) return;
+
+        const datosGuardados = cargarDesdeLocalStorage();
+        const entrenadores = datosGuardados.entrenadores || [];
+        
+        const nuevosEntrenadores = entrenadores.filter(e => e.dni_ent !== dni);
+        guardarEnLocalStorage({ entrenadores: nuevosEntrenadores });
+
+        // Actualizar tabla
+        actualizarTablaEntrenadores();
+
+        // Deshabilitar siguiente si no hay entrenadores
+        if (nuevosEntrenadores.length === 0) {
+            document.getElementById('btnSiguienteEntrenadores').disabled = true;
+            document.getElementById('btnSiguienteEntrenadores').classList.remove('btn-aprobar');
+            document.getElementById('btnSiguienteEntrenadores').classList.add('btn-siguiente');
+        }
+
+        showToast('Entrenador eliminado correctamente');
+    }
+
+    function actualizarTablaEntrenadores() {
+        const datosGuardados = cargarDesdeLocalStorage();
+        const entrenadores = datosGuardados.entrenadores || [];
+        const tbody = document.getElementById('tbodyEntrenadores');
+        const noData = document.getElementById('noDataEntrenadores');
+
+        tbody.innerHTML = '';
+
+        if (entrenadores.length === 0) {
+            noData.style.display = 'block';
+            return;
+        }
+
+        noData.style.display = 'none';
+        
+        entrenadores.forEach(entrenador => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${entrenador.dni_ent}</td>
+                <td>${entrenador.nombre}</td>
+                <td>${entrenador.apellido}</td>
+                <td>${entrenador.fecha_nac}</td>
+                <td>${entrenador.email || '-'}</td>
+                <td>${entrenador.telefono || '-'}</td>
+                <td>${entrenador.domicilio || '-'}</td>
+                <td>
+                    <button type="button" class="btn-eliminar" 
+                            onclick="eliminarEntrenador('${entrenador.dni_ent}')">
+                        Eliminar
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function siguientePaso() {
+        const datosGuardados = cargarDesdeLocalStorage();
+        const entrenadores = datosGuardados.entrenadores || [];
+        
+        if (entrenadores.length > 0) {
+            window.location.href = "{% url 'escuelas:registro_wizard' 'tutores' %}";
+        } else {
+            showToast('Debe registrar al menos un entrenador', 'error');
+        }
+    }
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', function() {
+        actualizarTablaEntrenadores();
+        
+        const datosGuardados = cargarDesdeLocalStorage();
+        const entrenadores = datosGuardados.entrenadores || [];
+        
+        if (entrenadores.length > 0) {
+            document.getElementById('btnSiguienteEntrenadores').disabled = false;
+            document.getElementById('btnSiguienteEntrenadores').classList.remove('btn-siguiente');
+            document.getElementById('btnSiguienteEntrenadores').classList.add('btn-aprobar');
+        }
+    });
+</script>
+{% endblock %}

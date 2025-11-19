@@ -1,0 +1,116 @@
+{% extends "registro/wizard_base.html" %}
+{% load static %}
+
+{% block paso_content %}
+<form id="formDocumentacion" class="form-registro">
+    {% csrf_token %}
+    
+    <div class="form-field">
+        <label for="documento">Nota al secretario Dapello *</label>
+        <input type="file" id="documento" name="documento" class="form-control" required 
+               accept=".doc,.docx,.pdf">
+        <small style="color: #666;">Formatos aceptados: .doc, .docx, .pdf</small>
+    </div>
+
+    <div style="background: #eafaf1; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #00b894;">
+        <h4 style="margin-top: 0; color: #0066ff;">📋 Información importante</h4>
+        <p style="margin-bottom: 0;">Suba la nota formal dirigida al secretario Dapello solicitando la habilitación de su escuela deportiva.</p>
+    </div>
+
+    <div class="form-actions">
+        <button type="button" class="btn-denegar" onclick="anteriorPaso()">
+            ← Anterior
+        </button>
+        <button type="button" id="btnGuardarDocumentacion" class="btn-guardar" onclick="guardarDocumentacion()">
+            Guardar
+        </button>
+        <button type="button" id="btnSiguienteDocumentacion" class="btn-siguiente" onclick="siguientePaso()" disabled>
+            Siguiente →
+        </button>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    let documentacionGuardada = false;
+
+    function anteriorPaso() {
+        window.location.href = "{% url 'escuelas:registro_wizard' 'escuela' %}";
+    }
+
+    function guardarDocumentacion() {
+        const fileInput = document.getElementById('documento');
+        
+        if (!fileInput.files.length) {
+            showToast('Seleccione un archivo', 'error');
+            return;
+        }
+
+        const file = fileInput.files[0];
+        const ext = file.name.split('.').pop().toLowerCase();
+        
+        if (!['doc', 'docx', 'pdf'].includes(ext)) {
+            showToast('Solo se permiten archivos .doc, .docx o .pdf', 'error');
+            return;
+        }
+
+        // Convertir archivo a base64 para localStorage
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const documentoData = {
+                nombre: file.name,
+                tipo: file.type,
+                datos: e.target.result.split(',')[1], // Remover el prefijo data:...
+                tamaño: file.size
+            };
+            
+            guardarEnLocalStorage({ documentacion: documentoData });
+            documentacionGuardada = true;
+            
+            // Actualizar estado de botones
+            document.getElementById('btnGuardarDocumentacion').disabled = true;
+            document.getElementById('btnSiguienteDocumentacion').disabled = false;
+            document.getElementById('btnSiguienteDocumentacion').classList.remove('btn-siguiente');
+            document.getElementById('btnSiguienteDocumentacion').classList.add('btn-aprobar');
+            
+            showToast('Documentación guardada correctamente');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function siguientePaso() {
+        if (documentacionGuardada) {
+            window.location.href = "{% url 'escuelas:registro_wizard' 'disciplinas' %}";
+        } else {
+            showToast('Debe guardar la documentación antes de continuar', 'error');
+        }
+    }
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', function() {
+        const datosGuardados = cargarDesdeLocalStorage();
+        if (datosGuardados.documentacion) {
+            documentacionGuardada = true;
+            document.getElementById('btnSiguienteDocumentacion').disabled = false;
+            document.getElementById('btnSiguienteDocumentacion').classList.remove('btn-siguiente');
+            document.getElementById('btnSiguienteDocumentacion').classList.add('btn-aprobar');
+            
+            // Mostrar nombre del archivo cargado
+            const fileInput = document.getElementById('documento');
+            fileInput.disabled = true;
+            fileInput.nextElementSibling.textContent = `Archivo cargado: ${datosGuardados.documentacion.nombre}`;
+        }
+
+        // Configurar detección de cambios
+        const fileInput = document.getElementById('documento');
+        const btnGuardar = document.getElementById('btnGuardarDocumentacion');
+        
+        fileInput.addEventListener('change', function() {
+            btnGuardar.disabled = false;
+            btnGuardar.classList.remove('btn-guardar');
+            btnGuardar.classList.add('btn-aprobar');
+        });
+    });
+</script>
+{% endblock %}
