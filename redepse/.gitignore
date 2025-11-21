@@ -5,7 +5,10 @@ __pycache__/
 *.pyd
 
 # Virtualenv
+venv/
+*/venv/
 ../venv/
+**/venv/
 env/
 *.env
 

@@ -35,7 +35,7 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = ['*']
 
-CSRF_TRUSTED_ORIGINS = ['https://apparatus-enhancing-efficient-psychological.trycloudflare.com']
+CSRF_TRUSTED_ORIGINS = ['https://surrounding-supplier-usr-own.trycloudflare.com']
 
 # Application definition
 
