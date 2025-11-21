@@ -6,7 +6,8 @@
 :root {
   --color-primary: #007bff;
   --color-secondary: #0066ff;
-  --color-accent: #ff0040; /* Usado en gradientes */
+  --color-accent: #ff0040;
+  /* Usado en gradientes */
   --color-success: #00b894;
   --color-danger: #e84118;
   --color-text: #333;
@@ -28,7 +29,8 @@ body {
 .dashboard-container {
   display: flex;
   height: 100vh;
-  position: relative; /* Para posicionar elementos modales si es necesario */
+  position: relative;
+  /* Para posicionar elementos modales si es necesario */
 }
 
 /* 2. Sidebar */
@@ -103,12 +105,17 @@ body {
   box-shadow: 0 0 8px rgba(255, 0, 64, 0.4);
 }
 
+.logout-mobile {
+  display: none;
+}
+
 /* 4. Contenido Principal */
 .content {
   flex: 1;
   padding: 30px;
   overflow-y: auto;
-  transition: margin-left 0.3s ease; /* Para el responsive */
+  transition: margin-left 0.3s ease;
+  /* Para el responsive */
 }
 
 .content header h1 {
@@ -157,7 +164,8 @@ table {
 
 th,
 td {
-  padding: 12px 8px; /* Unificado con tabla-alumnos, data-table */
+  padding: 12px 8px;
+  /* Unificado con tabla-alumnos, data-table */
   text-align: left;
   border-bottom: 1px solid #ddd;
   font-size: 0.9rem;
@@ -165,7 +173,8 @@ td {
 
 .tabla-alumnos th,
 .data-table th {
-  background-color: #f0f0f0; /* Color base */
+  background-color: #f0f0f0;
+  /* Color base */
   font-weight: 600;
 }
 
@@ -421,13 +430,27 @@ td {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slideIn {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 /* 14. Formulario (Consolidado) */
@@ -467,7 +490,8 @@ td {
 .form-field input:focus,
 .form-field select:focus,
 .form-field textarea:focus {
-  border-color: var(--color-secondary); /* Usando el color más vibrante para focus */
+  border-color: var(--color-secondary);
+  /* Usando el color más vibrante para focus */
   box-shadow: 0 0 5px rgba(0, 102, 255, 0.3);
   outline: none;
 }
@@ -562,9 +586,11 @@ input[type="checkbox"] {
 
 /* Tablet y Escritorio (769px en adelante) */
 @media (min-width: 501px) {
-    .sidebar-toggle-btn {
-        display: none; /* Oculta el botón en pantallas grandes */
-    }
+  .sidebar-toggle-btn {
+    display: none;
+    /* Oculta el botón en pantallas grandes */
+  }
+
 }
 
 /* Mobile (<= 768px - para grids y layout general) */
@@ -580,24 +606,29 @@ input[type="checkbox"] {
   .content {
     padding: 15px;
   }
-  
+
   .cards {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
+
 }
 
 /* Mobile Pequeño (<= 500px - Regla para Sidebar) */
 @media (max-width: 800px) {
   .dashboard-container {
-    overflow-x: hidden; /* Evita el scroll horizontal cuando el sidebar se oculta */
+    overflow-x: hidden;
+    /* Evita el scroll horizontal cuando el sidebar se oculta */
   }
-  
+
   .sidebar {
     position: fixed;
     height: 100%;
-    z-index: 100; /* Asegura que esté por encima del contenido */
-    transform: translateX(-100%); /* Ocultar completamente */
-    width: 200px; /* Un poco más pequeña en móvil */
+    z-index: 100;
+    /* Asegura que esté por encima del contenido */
+    transform: translateX(-100%);
+    /* Ocultar completamente */
+    width: 200px;
+    /* Un poco más pequeña en móvil */
   }
 
   /* Clase que se añade con JavaScript para mostrar la sidebar */
@@ -606,7 +637,8 @@ input[type="checkbox"] {
   }
 
   .content {
-    padding-top: 60px; /* Espacio para el header y botón de menú */
+    padding-top: 60px;
+    /* Espacio para el header y botón de menú */
   }
 
   /* Botón de Menú para mostrar/ocultar Sidebar (Necesitas este botón en tu HTML) */
@@ -623,5 +655,22 @@ input[type="checkbox"] {
     font-size: 1rem;
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  
+  .logout-mobile {
+    margin-top: 25px;
+    color: white;
+    border-radius: 8px;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-block;
+    padding: 15px;
+    /* Espacio de relleno */
+    background: var(--color-background);
+    background: var(--color-danger);
+    /* Separador del fondo del contenido */
+    border-top: 1px solid #ddd;
+    /* Asegúrate de que el enlace dentro tenga los estilos correctos */
   }
 }
