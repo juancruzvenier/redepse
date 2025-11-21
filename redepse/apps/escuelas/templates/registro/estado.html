@@ -1,33 +1,75 @@
-{% extends "registro/base.html" %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estado de Solicitud - REDEPSE</title>
+    <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}">
+</head>
+<body>
+    <div class="auth-container">
+        <img src="{% static 'accounts/img/LOGO_REDEPSE.png' %}" alt="Logo REDEPSE">
+        
+        <!-- Mensaje principal -->
+        <div class="status-header">
+            <h1>✅ Solicitud Enviada</h1>
+            <div class="status-message success-message">
+                <p><strong>¡Listo! Su solicitud fue enviada correctamente.</strong></p>
+                <p>Está pendiente de revisión por nuestro equipo.</p>
+            </div>
+        </div>
 
-{% block title %}Estado de la Solicitud{% endblock %}
+        <!-- Información importante -->
+        <div class="info-box">
+            <h3>📧 Revise su correo electrónico</h3>
+            <p>Hemos enviado un comprobante a su casilla de correo. Si no lo recibe en las próximas <strong>24 horas</strong>, contacte a la Secretaría:</p>
+            <ul>
+                <li>📞 Teléfono: [Número de contacto]</li>
+                <li>✉️ Email: [email de contacto]</li>
+            </ul>
+        </div>
 
-{% block content %}
-<h2 class="text-2xl font-bold mb-4">Estado de la Solicitud</h2>
+        <!-- Resumen de la solicitud -->
+        {% if escuela %}
+        <div class="solicitud-summary">
+            <h3>📋 Resumen de su solicitud</h3>
+            <div class="summary-item">
+                <strong>Escuela:</strong> {{ escuela.nombre }}
+            </div>
+            <div class="summary-item">
+                <strong>Fecha de envío:</strong> {{ escuela.solicitud_enviada|date:"d/m/Y H:i" }}
+            </div>
+            
+            <div class="summary-section">
+                <h4>👨‍🏫 Entrenadores registrados:</h4>
+                <ul>
+                    {% for ent in escuela.entrenador_set.all %}
+                        <li>{{ ent.nombre }} {{ ent.apellido }}</li>
+                    {% empty %}
+                        <li>No hay entrenadores agregados</li>
+                    {% endfor %}
+                </ul>
+            </div>
 
-{% if escuela %}
-    <p><strong>Nombre de la Escuela:</strong> {{ escuela.nombre }}</p>
-    <p><strong>Solicitud enviada:</strong> {{ escuela.solicitud_enviada }}</p>
+            <div class="summary-section">
+                <h4>👥 Alumnos registrados:</h4>
+                <ul>
+                    {% for alum in escuela.alumno_set.all %}
+                        <li>{{ alum.nombre }} {{ alum.apellido }}</li>
+                    {% empty %}
+                        <li>No hay alumnos agregados</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
 
-    <h3 class="mt-4 font-bold">Entrenadores</h3>
-    <ul>
-        {% for ent in escuela.entrenador_set.all %}
-            <li>{{ ent.nombre }} {{ ent.apellido }}</li>
-        {% empty %}
-            <li>No hay entrenadores agregados</li>
-        {% endfor %}
-    </ul>
-
-    <h3 class="mt-4 font-bold">Alumnos</h3>
-    <ul>
-        {% for alum in escuela.alumno_set.all %}
-            <li>{{ alum.nombre }} {{ alum.apellido }}</li>
-        {% empty %}
-            <li>No hay alumnos agregados</li>
-        {% endfor %}
-    </ul>
-
-{% else %}
-    <p>No se encontró ninguna escuela asociada a tu usuario.</p>
-{% endif %}
-{% endblock %}
+        <!-- Botones de acción -->
+        <div class="action-buttons">
+            <a href="{% url 'home' %}" class="btn-primary">🏠 Volver al Inicio</a>
+            <a href="{% url 'accounts:logout' %}" class="btn-secondary">🚪 Cerrar Sesión</a>
+        </div>
+    </div>
+</body>
+</html>
