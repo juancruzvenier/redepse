@@ -136,13 +136,14 @@
 
         // Obtener todos los datos del localStorage
         const datosCompletos = cargarDesdeLocalStorage();
+        console.log("Datos a enviar:", datosCompletos);  // Para debug
 
         // Validar que todos los pasos estén completos
         const pasosRequeridos = ['escuela', 'disciplinas', 'entrenadores', 'tutores', 'alumnos'];
         const pasosFaltantes = pasosRequeridos.filter(paso => !datosCompletos[paso]);
 
         if (pasosFaltantes.length > 0) {
-            showToast('Complete todos los pasos antes de enviar la solicitud', 'error');
+            showToast(`Complete los siguientes pasos antes de enviar: ${pasosFaltantes.join(', ')}`, 'error');
             btnEnviar.disabled = false;
             btnEnviar.textContent = 'Enviar Solicitud';
             return;
@@ -157,10 +158,15 @@
             },
             body: JSON.stringify(datosCompletos)
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
-                showToast('Solicitud enviada exitosamente', 'success');
+                showToast(data.message, 'success');
                 limpiarLocalStorage();
                 
                 // Redirigir a la página de estado después de 2 segundos
@@ -172,7 +178,8 @@
             }
         })
         .catch(error => {
-            showToast('Error: ' + error.message, 'error');
+            console.error('Error:', error);
+            showToast('Error al enviar la solicitud: ' + error.message, 'error');
             btnEnviar.disabled = false;
             btnEnviar.textContent = 'Enviar Solicitud';
         });

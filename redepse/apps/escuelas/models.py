@@ -4,7 +4,8 @@ from django.contrib.auth.models import User
 class Documento(models.Model):
     id_documento = models.AutoField(primary_key=True)
     id_esc = models.ForeignKey('Escuela', models.DO_NOTHING, db_column='id_esc')
-    documento = models.FileField(upload_to='documentos/')
+    documento = models.FileField(upload_to='documentos/%Y/%m/%d/')
+    tipo = models.CharField(max_length=50, default='nota_secretario')
     fecha_subida = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -19,7 +20,7 @@ class AluDiscEscPer(models.Model):
     id_periodo = models.ForeignKey('Periodo', models.DO_NOTHING, db_column='id_periodo', blank=True, null=True)
 
     class Meta:
-        db_table = 'alu_disc_esc_periodo'
+        db_table = 'alu_disc_esc_per'
 
 
 class Alumno(models.Model):
@@ -28,7 +29,7 @@ class Alumno(models.Model):
     apellido = models.CharField(max_length=50)
     fecha_nac = models.DateField()
     domicilio = models.CharField(max_length=100, blank=True, null=True)
-    dni_tutor = models.IntegerField(blank=True, null=True)
+    dni_tutor = models.ForeignKey('Tutor', models.DO_NOTHING, db_column='dni_tutor', blank=True, null=True)
 
     class Meta:
         db_table = 'alumno'
@@ -62,7 +63,7 @@ class Empleado(models.Model):
     id_user = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        db_table = 'empleados'
+        db_table = 'empleado'
 
 
 class EntDiscEscPer(models.Model):
@@ -129,14 +130,14 @@ class Participacion(models.Model):
     fecha_participacion = models.DateField(blank=True, null=True)
 
     class Meta:
-        db_table = 'participaciones'
+        db_table = 'participacion'
 
 
 class Periodo(models.Model):
-    periodo = models.IntegerField(primary_key=True, unique=True)
+    id_periodo = models.IntegerField(primary_key=True, unique=True)
 
     class Meta:
-        db_table = 'periodos'
+        db_table = 'periodo'
 
 
 class Responsable(models.Model):
@@ -148,7 +149,7 @@ class Responsable(models.Model):
     telefono2 = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
-        db_table = 'responsables'
+        db_table = 'responsable'
 
 
 class Solicitudes(models.Model):
