@@ -1,0 +1,53 @@
+<div id="modal-capacitacion" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>Enviar capacitación</h3>
+      <form id="form-capacitacion">
+        {% csrf_token %}
+        <input type="text" name="asunto" placeholder="Asunto" required>
+        <textarea name="mensaje" placeholder="Mensaje" rows="6" required></textarea>
+        <div class="modal-actions">
+          <button type="button" onclick="cerrarModalCapacitacion()">Cancelar</button>
+          <button type="submit">Enviar</button>
+        </div>
+      </form>
+      <div id="capacitacion-status"></div>
+    </div>
+  </div>
+  
+  <script>
+  function abrirModalCapacitacion(e){
+    if (e) e.preventDefault();
+    const m = document.getElementById('modal-capacitacion');
+    if (m) m.style.display = 'flex';
+  }
+  function cerrarModalCapacitacion(){
+    const m = document.getElementById('modal-capacitacion');
+    if (m) m.style.display = 'none';
+    const s = document.getElementById('capacitacion-status');
+    if (s) s.innerHTML = '';
+  }
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('form-capacitacion');
+    if (!form) return;
+    form.addEventListener('submit', async ev => {
+      ev.preventDefault();
+      const status = document.getElementById('capacitacion-status');
+      const data = new FormData(form);
+      if (status) status.innerHTML = 'Enviando...';
+      try {
+        const resp = await fetch("{% url 'accounts:enviar_capacitacion' %}", {
+          method: 'POST',
+          headers: {'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value},
+          body: data
+        });
+        const json = await resp.json();
+        if (!resp.ok) throw new Error(json.error || 'Error al enviar');
+        if (status) status.innerHTML = `Enviado a ${json.enviados} escuelas.`;
+      } catch (err) {
+        if (status) status.innerHTML = `<span style="color:red;">${err.message}</span>`;
+      }
+    });
+  });
+  </script>
+  

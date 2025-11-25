@@ -30,17 +30,31 @@
           placeholder="Correo electrónico"
           required
         />
-        <input
-          type="password"
-          name="password"
-          placeholder="Contraseña"
-          required
-        />
+        <div class="password-wrapper">
+          <input
+            type="password"
+            id="login_password"
+            name="password"
+            placeholder="Contraseña"
+            required
+          />
+          <button type="button" class="toggle-pass" onclick="togglePass('login_password', this)">👁</button>
+        </div>
         <input type="submit" value="Iniciar sesión" />
       </form>
       <a href="{% url 'accounts:register' %}">¿No tienes cuenta? Regístrate</a> <br>
-      <a target="_blank" href="../../../../static/files/INSTRUCTIVO.pdf">¿No sabes cómo empezar? Descargá el instructivo</a>
-      <a href="{% url 'home' %}">⬅️ Volver a la página principal</a>
-    </div>
-  </body>
+      <a href="{% url 'accounts:password_reset' %}" class="link-recuperar">¿Olvidaste tu contraseña? Recupérala aquí</a>
+      <a target="_blank" href="../../../../static/files/INSTRUCTIVO.pdf">¿No sabes cómo empezar? Descarga el instructivo</a>
+      <a href="{% url 'home' %}">Volver a la página principal</a>
+      
+      <script>
+        function togglePass(id, btn) {
+          const input = document.getElementById(id);
+          const isPass = input.type === 'password';
+          input.type = isPass ? 'text' : 'password';
+          btn.textContent = isPass ? '🙈' : '👁';
+        }
+      </script>
+      
+  
 </html>

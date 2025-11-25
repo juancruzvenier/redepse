@@ -44,3 +44,6 @@ class LoginForm(AuthenticationForm):
         # Sobrescribimos para mostrar un mensaje en español si algo falla
         if not user.is_active:
             raise forms.ValidationError("Esta cuenta está deshabilitada.", code='inactive')
+
+
+

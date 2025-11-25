@@ -1,0 +1,153 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Entrenadores Registrados</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'accounts/css/admin.css' %}" />
+  </head>
+
+  <body>
+    <div class="dashboard-container">
+      
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="logo">
+          <img src="{% static 'accounts/img/logo.jpeg' %}" alt="Logo" />
+          <h2>REDEPSE</h2>
+        </div>
+
+        <nav>
+          <ul>
+            <li>
+              <a href="{% url 'accounts:admin_dashboard' %}"
+                 class="sidebar-link">
+                 Escuelas Registradas
+              </a>
+            </li>
+
+            <li>
+              <a href="{% url 'accounts:solicitudes_pendientes' %}"
+                 class="sidebar-link">
+                 Solicitudes Pendientes
+              </a>
+            </li>
+
+            <li>
+              <a href="{% url 'accounts:entrenadores_registrados' %}"
+                 class="sidebar-link active">
+                 Entrenadores
+              </a>
+            </li>
+
+            <li>
+              <a href="#" class="sidebar-link" onclick="abrirModalCapacitacion(event)">
+                Capacitaciones
+              </a>
+            </li>
+          </ul>
+        </nav>
+
+        <div class="logout">
+          <a href="{% url 'accounts:logout' %}">Cerrar sesión</a>
+        </div>
+      </aside>
+
+      <!-- Contenido principal -->
+      <main class="content">
+        <header>
+          <h1>Administrador</h1>
+        </header>
+
+        <section class="table-section">
+
+          <div class="table-header">
+            <h2>Entrenadores Registrados</h2>
+
+            <div class="filters">
+              <input type="text" id="buscarNombre" placeholder="Buscar por nombre o apellido">
+              <input type="text" id="buscarDni" placeholder="Buscar por DNI">
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>DNI</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Domicilio</th>
+              </tr>
+            </thead>
+
+            <tbody id="tbody-entrenadores">
+              {% for e in entrenadores %}
+              <tr>
+                <td>{{ e.apellido }}, {{ e.nombre }}</td>
+                <td>{{ e.dni_ent }}</td>
+                <td>{{ e.telefono|default:"—" }}</td>
+                <td>{{ e.email|default:"—" }}</td>
+                <td>{{ e.domicilio|default:"—" }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" style="text-align:center; color:#999;">
+                  No hay entrenadores registrados.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+        </section>
+      </main>
+    </div>
+
+    <!-- Filtros -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const inputNombre = document.getElementById("buscarNombre");
+        const inputDni = document.getElementById("buscarDni");
+        const filas = document.querySelectorAll("#tbody-entrenadores tr");
+        const tbody = document.getElementById("tbody-entrenadores");
+
+        function filtrar() {
+          const tNombre = inputNombre.value.toLowerCase().trim();
+          const tDni = inputDni.value.toLowerCase().trim();
+          let hay = false;
+
+          filas.forEach(fila => {
+            const nombre = fila.cells[0].textContent.toLowerCase();
+            const dni = fila.cells[1].textContent.toLowerCase();
+
+            const ok = (!tNombre || nombre.includes(tNombre)) &&
+                       (!tDni || dni.includes(tDni));
+
+            fila.style.display = ok ? "" : "none";
+            if (ok) hay = true;
+          });
+
+          let msg = document.getElementById("sin-entrenadores");
+          if (!hay) {
+            if (!msg) {
+              msg = document.createElement("tr");
+              msg.id = "sin-entrenadores";
+              msg.innerHTML = `<td colspan="5" style="text-align:center; color:#888;">No se encontraron entrenadores</td>`;
+              tbody.appendChild(msg);
+            }
+          } else if (msg) {
+            msg.remove();
+          }
+        }
+
+        inputNombre.addEventListener("input", filtrar);
+        inputDni.addEventListener("input", filtrar);
+      });
+    </script>
+
+    {% include 'accounts/includes/modal_capacitacion.html' %}
+
+  </body>
+</html>
