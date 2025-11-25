@@ -37,9 +37,7 @@
             <li>
               <a href="#" class="sidebar-link">Profesores</a>
             </li>
-            <li>
-              <a href="#" class="sidebar-link" onclick="abrirModalCapacitacion(event)">Capacitaciones</a>
-            </li>            
+            <li><a href="#" class="sidebar-link" onclick="abrirModalCapacitacion(event)">Capacitaciones</a></li>           
           </ul>
         </nav>
         <div class="logout">
@@ -405,21 +403,8 @@ document.getElementById('form-capacitacion').addEventListener('submit', async fu
 });
     </script>
 
-<div id="modal-capacitacion" class="modal" style="display:none;">
-  <div class="modal-content">
-    <h3>Enviar capacitación</h3>
-    <form id="form-capacitacion">
-      {% csrf_token %}
-      <input type="text" name="asunto" placeholder="Asunto" required>
-      <textarea name="mensaje" placeholder="Mensaje" rows="6" required></textarea>
-      <div class="modal-actions">
-        <button type="button" onclick="cerrarModalCapacitacion()">Cancelar</button>
-        <button type="submit">Enviar</button>
-      </div>
-    </form>
-    <div id="capacitacion-status"></div>
-  </div>
-</div>
+    <!-- Modal de Capacitaciones -->
+    {% include 'accounts/includes/modal_capacitacion.html' %}
 
   </body>
 </html>
