@@ -395,4 +395,28 @@ body, html {
     bottom: auto !important;
     transform: translateZ(999px); /* evita quedar bajo capas 3D o z-index raros */
   }
+
+  .modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: grid;           /* centrado en ambos ejes */
+    place-items: center;     /* equivale a align-items/justify-content center */
+    background: rgba(0,0,0,0.45);
+    z-index: 9999;
+    padding: 16px;
+  }
   
+  .modal-content {
+    margin: 0;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 420px;
+    max-width: 90%;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.15);
+  }
+  .modal-content h3 { margin-top: 0; }
+.modal-content input, .modal-content textarea { width: 100%; margin-bottom: 12px; box-sizing: border-box; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
