@@ -8,7 +8,13 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import EmailMultiAlternatives
 from django.db.models import Q
 import json
-
+from django.urls import reverse
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import default_token_generator
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.views.decorators.http import require_POST
 from .forms import RegisterForm, LoginForm
 from apps.escuelas.models import (
     Escuela, Entrenador, EntDiscEscPer, Solicitudes,
@@ -23,16 +29,57 @@ def register_view(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
+            user.is_active = False  # se activará por correo
             user.set_password(form.cleaned_data['password'])
             user.save()
-            login(request, user)
-            messages.success(request, 'Cuenta creada con éxito. Por favor, inicia sesión.')
+
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            activation_link = request.build_absolute_uri(
+                reverse('accounts:activate', args=[uid, token])
+            )
+
+            subject = "Activa tu cuenta"
+            context = {"user": user, "activation_link": activation_link}
+            html_body = render_to_string('accounts/activation_email.html', context)
+
+            email = EmailMultiAlternatives(
+                subject=subject,
+                body=f"Activa tu cuenta aquí: {activation_link}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[user.email],
+            )
+            email.attach_alternative(html_body, "text/html")
+            email.send()
+
+            messages.success(request, 'Te enviamos un correo para activar tu cuenta.')
             return redirect('accounts:login')
         else:
             messages.error(request, 'Error al crear la cuenta. Verifica los datos ingresados.')
     else:
         form = RegisterForm()
     return render(request, 'accounts/register.html', {'form': form})
+
+
+
+
+def activate_account(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, "Cuenta activada. Ya puedes iniciar sesión.")
+        return redirect('accounts:login')
+    else:
+        messages.error(request, "El enlace de activación no es válido o expiró.")
+        return redirect('accounts:register')
+
+
 
 
 # ====================================================
@@ -52,16 +99,20 @@ def login_view(request):
 
         user = authenticate(request, username=username, password=password)
         if user is not None:
+            if not user.is_active:
+                messages.error(request, 'Debes activar tu cuenta desde el correo enviado.')
+                return render(request, 'accounts/login.html')
             login(request, user)
-            messages.success(request, f'Bienvenido, {user.username} 👋')
+            messages.success(request, f'Bienvenido, {user.username} !')
             if user.is_superuser or user.is_staff:
                 return redirect('accounts:admin_dashboard')
             else:
                 return redirect('escuelas:registro_wizard', paso='escuela')
         else:
-            messages.error(request, 'Correo o contraseña incorrectos.')
+            messages.error(request, 'Correo o contraseA�a incorrectos.')
 
     return render(request, 'accounts/login.html')
+
 
 
 # ====================================================
@@ -266,4 +317,44 @@ def gestionar_solicitud(request):
     except Exception as e:
         print(f"❌ Error en gestionar_solicitud: {e}")
         return JsonResponse({'error': 'Error procesando la solicitud'}, status=500)
+
+@require_POST
+@login_required(login_url='login')
+def enviar_capacitacion(request):
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'error': 'No autorizado'}, status=403)
+
+    subject = request.POST.get('asunto', '').strip()
+    body = request.POST.get('mensaje', '').strip()
+    if not subject or not body:
+        return JsonResponse({'error': 'Asunto y mensaje son obligatorios'}, status=400)
+
+    correos = list(
+        Solicitudes.objects.filter(estado__iexact='aprobada')
+        .select_related('id_esc')
+        .values_list('id_esc__email', flat=True)
+    )
+    correos = [c for c in correos if c]  # filtra vacíos
+
+    if not correos:
+        return JsonResponse({'error': 'No hay escuelas aprobadas con correo'}, status=400)
+
+    try:
+        email_msg = EmailMultiAlternatives(
+            subject=subject,
+            body=body,
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None) or 'no-reply@example.com',
+            to=[],
+            bcc=correos,  # bcc para enviar a todas sin exponer lista
+        )
+        email_msg.send()
+    except Exception as e:
+        return JsonResponse({'error': f'Error enviando correos: {e}'}, status=500)
+
+    return JsonResponse({'ok': True, 'enviados': len(correos)})
+
+
+from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
+
 

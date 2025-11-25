@@ -302,3 +302,25 @@ body {
     flex-direction: column;
   }
 }
+
+
+.password-wrapper {
+  position: relative;
+}
+.password-wrapper input {
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: 44px; /* espacio para el ojo */
+}
+.password-wrapper .toggle-pass {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+}
