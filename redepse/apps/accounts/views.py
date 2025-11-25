@@ -236,6 +236,25 @@ def detalle_escuela(request, id_esc):
         'origen': origen
     })
 
+# ====================================================
+# ✅ Listar ENTRENADORES
+# ====================================================
+@login_required(login_url='login')
+def entrenadores_registrados(request):
+    if not (request.user.is_staff or request.user.is_superuser):
+        messages.error(request, "No tienes permiso para acceder a esta página.")
+        return redirect('accounts:home')
+
+    lista_entrenadores = (
+        Entrenador.objects
+        .filter(entdiscescper__id_esc__estado='aprobada')  # ⬅ FILTRO CLAVE
+        .distinct()                                        # ⬅ evita duplicados
+        .order_by('apellido', 'nombre')
+    )
+
+    return render(request, 'accounts/entrenadores_registrados.html', {
+        'entrenadores': lista_entrenadores
+    })
 
 # ====================================================
 # ✅ Aprobar / Denegar solicitudes (HTML + Logo)
