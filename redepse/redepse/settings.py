@@ -149,3 +149,25 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
+# Backblaze B2 Configuration
+AWS_ACCESS_KEY_ID = os.getenv('B2_ACCESS_KEY')
+AWS_SECRET_ACCESS_KEY = os.getenv('B2_SECRET_KEY')
+AWS_STORAGE_BUCKET_NAME = os.getenv('B2_BUCKET_NAME')
+AWS_S3_ENDPOINT_URL = os.getenv('B2_ENDPOINT')
+
+# Configuración adicional importante
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = 'private'  # Archivos privados por defecto
+AWS_QUERYSTRING_AUTH = True  # URLs con expiración para seguridad
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+
+# Storage configuration
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+# Para desarrollo local (opcional)
+if os.getenv('DJANGO_DEBUG', 'True') == 'True':
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
