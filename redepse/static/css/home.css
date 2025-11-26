@@ -1,0 +1,381 @@
+* {
+    margin: 0;
+    box-sizing: border-box;
+    font-family: "Montserrat", sans-serif;
+    scroll-behavior: smooth;
+}
+
+.header {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    padding: 20px 0px;
+    position: fixed;
+    transition: background-color 0.3s ease;
+}
+
+
+.header.scrolled {
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: background-color 0.3s ease;
+}
+
+nav {
+    width: 80%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+}
+
+nav .logo {
+    display: flex;
+    gap: 20px;
+}
+
+
+nav ul {
+    display: flex;
+    list-style: none;
+    gap: 30px;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: white;
+    font-size: 12px;
+    transition: 0.1s;
+}
+
+nav ul li a:hover {
+    color: #12bcd3;
+}
+
+#hero {
+    color: white;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.9)), url("../img/l_1722044959.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero_content {
+    display: flex;
+    width: 80%;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.hero_content h1 {
+    color: white;
+    font-size: 4rem;
+    text-shadow: 1px 1px 100px black;
+}
+
+.hero_content h2 {
+    color: white;
+    font-size: 1.5rem;
+    width: 100%;
+    text-shadow: 1px 1px 100px black;
+}
+
+.hero_content p {
+    color: lightgrey;
+    margin: 0;
+    text-shadow: 1px 1px 100px black;
+    width: 70%;
+    font-size: 14px;
+}
+
+.hero_content .btn {
+    padding: 10px 30px;
+    color: white;
+    background: #6c6c6cb6;
+    text-decoration: none;
+    border-radius: 100px;
+    font-size: 14px;
+    box-shadow: 1px 1px 100px black;
+}
+
+
+.btn:hover {
+    background: #12bcd3b6;
+    transition: 0.1s;
+}
+
+
+#information {
+    margin: 50px 0;
+    color: rgb(0, 0, 0);
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 50vh;
+    /*     overflow: hidden; */
+    justify-content: center;
+    align-items: center;
+}
+
+.information-cards {
+    margin: 50px 0;
+    display: flex;
+    width: 80%;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.card {
+    display: flex;
+    width: 30%;
+    height: 80px;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 2px 7px 13px 0px rgba(0, 0, 0, 0.2);
+    border-color: #000000;
+    font-size: 11px;
+    border-radius: 10px;
+    gap: 20px;
+    padding: 10px;
+    text-decoration: none;
+    color: rgb(42, 61, 71);
+}
+
+.card:hover {
+    background: #12bcd3b6;
+    transition: 0.1s;
+    scale: 1.05;
+}
+
+.card img {
+    width: 30px;
+}
+
+#footer {
+    display: flex;
+    width: 100%;
+    height: 50vh;
+    background: linear-gradient(to right, #00a0e5, #c30135);
+    flex-direction: column;
+    color: white;
+    justify-content: center;
+    align-items: center;
+}
+
+.footer {
+    margin: 50px 0;
+    height: 100%;
+    display: flex;
+    width: 80%;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+}
+
+.footer-img {
+    width: 50%;
+    display: flex;
+    gap: 50px;
+}
+
+.footer-img img {
+    width: 100px;
+}
+
+
+.footer-datos {
+    width: 40%;
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+    gap: 10px;
+    text-align: end;
+}
+
+.footer-datos img {
+    margin-left: 5px;
+}
+
+.footer-social {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+}
+
+.footer-social img {
+    width: 20px;
+}
+
+.footer-copy {
+    background-color: #000000;
+    font-size: 12px;
+    text-align: center;
+    width: 100%;
+    padding: 20px 40px;
+}
+
+.footer-copy a {
+    color: white;
+    font-weight: bold;
+}
+
+/* ---------------------------------------------------- */
+/* --- MEDIA QUERIES: CELULARES (MÁX. 480PX) --- */
+/* ---------------------------------------------------- */
+
+@media (max-width: 480px) {
+    /* --- HEADER Y NAVEGACIÓN --- */
+    nav {
+        width: 90%; /* Más margen en los bordes */
+        flex-direction: column; /* Apilamos logo y menú */
+        gap: 15px;
+    }
+
+    nav .logo {
+        flex-direction: column;
+        gap: 5px;
+        align-items: center;
+    }
+
+    nav ul {
+        gap: 15px;
+        padding: 0; /* Quitamos padding si lo hay */
+    }
+
+    nav ul li a {
+        font-size: 10px; /* Reducimos tamaño de fuente */
+    }
+
+
+    /* --- SECCIÓN HERO --- */
+    .hero_content {
+        width: 90%;
+        text-align: center;
+        align-items: center; /* Centramos el texto y el botón */
+    }
+
+    .hero_content h1 {
+        font-size: 2.5rem; /* Reducimos el tamaño del título principal */
+    }
+
+    .hero_content h2 {
+        font-size: 1.2rem;
+    }
+
+    .hero_content p {
+        width: 100%; /* El párrafo ocupa todo el ancho */
+        font-size: 12px;
+    }
+
+    /* --- SECCIÓN INFORMATION (TARJETAS) --- */
+    .information-cards {
+        width: 90%;
+        flex-direction: column; /* Apilamos las tarjetas */
+    }
+
+    .card {
+        width: 90%; /* Cada tarjeta ocupa casi todo el ancho */
+        height: auto; /* Altura automática */
+        font-size: 12px;
+        padding: 15px;
+    }
+
+    /* --- SECCIÓN FOOTER --- */
+    #footer {
+        height: auto; /* Altura automática para que quepa todo */
+        margin-top: 50px;
+    }
+
+    .footer {
+        width: 90%;
+        flex-direction: column; /* Apilamos las secciones del footer */
+        gap: 30px;
+        text-align: center;
+        margin: 50px 0;
+    }
+
+    .footer-img {
+        width: 100%;
+        justify-content: center;
+        gap: 30px;
+        flex-wrap: wrap; /* Si hay muchas imágenes */
+    }
+
+    .footer-datos {
+        width: 100%;
+        align-items: center; /* Centramos el texto en el footer */
+        text-align: center;
+    }
+
+    .footer-social {
+        justify-content: center;
+    }
+}
+
+
+/* ---------------------------------------------------- */
+/* --- MEDIA QUERIES: TABLETS (MÁX. 768PX) --- */
+/* ---------------------------------------------------- */
+
+@media (min-width: 481px) and (max-width: 768px) {
+
+    /* --- SECCIÓN HERO --- */
+    .hero_content h1 {
+        font-size: 3rem; /* Título un poco más pequeño */
+    }
+
+    .hero_content h2 {
+        font-size: 1.3rem;
+    }
+
+    .hero_content p {
+        width: 80%;
+    }
+
+    /* --- SECCIÓN INFORMATION (TARJETAS) --- */
+    .information-cards {
+        justify-content: space-around; /* Distribuimos mejor las tarjetas */
+    }
+
+    .card {
+        width: 45%; /* Dos tarjetas por fila, aproximadamente */
+        height: 100px;
+    }
+
+    /* --- SECCIÓN FOOTER --- */
+    .footer {
+        flex-direction: column; /* También apilamos las secciones del footer */
+        gap: 25px;
+        text-align: center;
+        margin: 30px 0;
+    }
+
+    .footer-img {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .footer-datos {
+        width: 100%;
+        align-items: center;
+        text-align: center;
+    }
+
+    .footer-social {
+        justify-content: center;
+    }
+}

@@ -1,0 +1,227 @@
+{% extends "registro/wizard_base.html" %}
+{% load static %}
+
+{% block paso_content %}
+<form id="formTutor" class="form-registro">
+    {% csrf_token %}
+    
+    <h3 style="margin-bottom: 20px;">Registrar Tutor</h3>
+    
+    <div class="form-grid">
+        <div class="form-field">
+            <label for="dni_tutor">DNI del tutor *</label>
+            <input type="number" id="dni_tutor" name="dni_tutor" class="form-control" required 
+                   placeholder="Ej: 40123456" min="1000000" max="99999999">
+        </div>
+
+        <div class="form-field">
+            <label for="nombre">Nombre del tutor *</label>
+            <input type="text" id="nombre" name="nombre" class="form-control" required 
+                   placeholder="Ej: María">
+        </div>
+
+        <div class="form-field">
+            <label for="apellido">Apellido del tutor *</label>
+            <input type="text" id="apellido" name="apellido" class="form-control" required 
+                   placeholder="Ej: González">
+        </div>
+
+        <div class="form-field">
+            <label for="email">Correo electrónico</label>
+            <input type="email" id="email" name="email" class="form-control" 
+                   placeholder="ejemplo@email.com">
+        </div>
+
+        <div class="form-field">
+            <label for="telefono1">Teléfono</label>
+            <input type="tel" id="telefono1" name="telefono1" class="form-control" 
+                   placeholder="Ej: 3854123456" pattern="[0-9]+">
+        </div>
+
+        <div class="form-field">
+            <label for="domicilio">Domicilio</label>
+            <input type="text" id="domicilio" name="domicilio" class="form-control" 
+                   placeholder="Ej: Calle Principal 123">
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="button" class="btn-denegar" onclick="anteriorPaso()">
+            ← Anterior
+        </button>
+        <button type="button" id="btnRegistrarTutor" class="btn-aprobar" onclick="registrarTutor()">
+            Registrar Tutor
+        </button>
+    </div>
+</form>
+
+<!-- Tabla de tutores registrados -->
+<div id="tablaContainer" class="table-section" style="margin-top: 30px;">
+    <h3>Tutores Registrados</h3>
+    <table id="tablaTutores" class="data-table">
+        <thead>
+            <tr>
+                <th>DNI</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>Domicilio</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tbodyTutores">
+            <!-- Los tutores se cargarán aquí dinámicamente -->
+        </tbody>
+    </table>
+    <p id="noDataTutores" class="no-data">Aún no hay tutores registrados</p>
+</div>
+
+<div class="form-actions" style="margin-top: 20px;">
+    <button type="button" id="btnSiguienteTutores" class="btn-siguiente" onclick="siguientePaso()" disabled>
+        Siguiente →
+    </button>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function anteriorPaso() {
+        window.location.href = "{% url 'escuelas:registro_wizard' 'entrenadores' %}";
+    }
+
+    function registrarTutor() {
+        const form = document.getElementById('formTutor');
+        const formData = new FormData(form);
+        
+        // Validar campos requeridos
+        const camposRequeridos = ['dni_tutor', 'nombre', 'apellido'];
+        for (let campo of camposRequeridos) {
+            if (!formData.get(campo)) {
+                showToast(`Complete el campo ${campo}`, 'error');
+                return;
+            }
+        }
+
+        // Crear objeto tutor
+        const tutor = {};
+        for (let [key, value] of formData.entries()) {
+            tutor[key] = value;
+        }
+
+        // Obtener tutores existentes
+        const datosGuardados = cargarDesdeLocalStorage();
+        const tutores = datosGuardados.tutores || [];
+
+        // Verificar DNI duplicado
+        if (tutores.some(t => t.dni_tutor === tutor.dni_tutor)) {
+            showToast('Ya existe un tutor con este DNI', 'error');
+            return;
+        }
+
+        // Agregar nuevo tutor
+        tutores.push(tutor);
+        guardarEnLocalStorage({ tutores: tutores });
+
+        // Limpiar formulario
+        form.reset();
+
+        // Actualizar tabla
+        actualizarTablaTutores();
+
+        // Habilitar siguiente si hay al menos un tutor
+        if (tutores.length > 0) {
+            document.getElementById('btnSiguienteTutores').disabled = false;
+            document.getElementById('btnSiguienteTutores').classList.remove('btn-siguiente');
+            document.getElementById('btnSiguienteTutores').classList.add('btn-aprobar');
+        }
+
+        showToast('Tutor registrado correctamente');
+    }
+
+    function eliminarTutor(dni) {
+        if (!confirm('¿Está seguro de eliminar este tutor?')) return;
+
+        const datosGuardados = cargarDesdeLocalStorage();
+        const tutores = datosGuardados.tutores || [];
+        
+        const nuevosTutores = tutores.filter(t => t.dni_tutor !== dni);
+        guardarEnLocalStorage({ tutores: nuevosTutores });
+
+        // Actualizar tabla
+        actualizarTablaTutores();
+
+        // Deshabilitar siguiente si no hay tutores
+        if (nuevosTutores.length === 0) {
+            document.getElementById('btnSiguienteTutores').disabled = true;
+            document.getElementById('btnSiguienteTutores').classList.remove('btn-aprobar');
+            document.getElementById('btnSiguienteTutores').classList.add('btn-siguiente');
+        }
+
+        showToast('Tutor eliminado correctamente');
+    }
+
+    function actualizarTablaTutores() {
+        const datosGuardados = cargarDesdeLocalStorage();
+        const tutores = datosGuardados.tutores || [];
+        const tbody = document.getElementById('tbodyTutores');
+        const noData = document.getElementById('noDataTutores');
+
+        tbody.innerHTML = '';
+
+        if (tutores.length === 0) {
+            noData.style.display = 'block';
+            return;
+        }
+
+        noData.style.display = 'none';
+        
+        // Ordenar tutores por apellido
+        tutores.sort((a, b) => a.apellido.localeCompare(b.apellido));
+        
+        tutores.forEach(tutor => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${tutor.dni_tutor}</td>
+                <td>${tutor.nombre}</td>
+                <td>${tutor.apellido}</td>
+                <td>${tutor.email || '-'}</td>
+                <td>${tutor.telefono1 || '-'}</td>
+                <td>${tutor.domicilio || '-'}</td>
+                <td>
+                    <button type="button" class="btn-eliminar" 
+                            onclick="eliminarTutor('${tutor.dni_tutor}')">
+                        Eliminar
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function siguientePaso() {
+        const datosGuardados = cargarDesdeLocalStorage();
+        const tutores = datosGuardados.tutores || [];
+        
+        if (tutores.length > 0) {
+            window.location.href = "{% url 'escuelas:registro_wizard' 'alumnos' %}";
+        } else {
+            showToast('Debe registrar al menos un tutor', 'error');
+        }
+    }
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', function() {
+        actualizarTablaTutores();
+        
+        const datosGuardados = cargarDesdeLocalStorage();
+        const tutores = datosGuardados.tutores || [];
+        
+        if (tutores.length > 0) {
+            document.getElementById('btnSiguienteTutores').disabled = false;
+            document.getElementById('btnSiguienteTutores').classList.remove('btn-siguiente');
+            document.getElementById('btnSiguienteTutores').classList.add('btn-aprobar');
+        }
+    });
+</script>
+{% endblock %}

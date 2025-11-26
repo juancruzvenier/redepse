@@ -1,0 +1,438 @@
+* {
+    margin: 0;
+    box-sizing: border-box;
+    font-family: "Montserrat", sans-serif;
+    scroll-behavior: smooth;
+}
+
+.header {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    padding: 20px 0px;
+    position: fixed;
+    transition: background-color 0.3s ease;
+}
+
+
+.header.scrolled {
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: background-color 0.3s ease;
+}
+
+nav {
+    width: 80%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+}
+
+nav .logo {
+    display: flex;
+    gap: 20px;
+}
+
+
+nav ul {
+    display: flex;
+    list-style: none;
+    gap: 30px;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: white;
+    font-size: 12px;
+    transition: 0.1s;
+}
+
+nav ul li a:hover {
+    color: #12bcd3;
+}
+
+#hero {
+    color: white;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 55vh;
+    overflow-x: hidden;
+    background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.9)), url("../img/estadio.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.hero_content {
+    display: flex;
+    width: 80%;
+    height: 80%;
+    justify-content: flex-start;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.hero_content h1 {
+    margin-bottom: 20px;
+    color: white;
+    font-size: 3rem;
+    text-shadow: 1px 1px 100px black;
+}
+
+#institucional {
+    color: rgb(0, 0, 0);
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    /*     overflow: hidden; */
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(237, 237, 237);
+}
+
+.datos-institucion {
+    margin: 50px 0;
+    display: flex;
+    width: 80%;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+}
+
+.autoridad-institucion {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    gap: 20px;
+}
+
+.autoridad-card {
+    display: flex;
+    width: 50%;
+    height: 150px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    gap: 20px;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.autoridad-img img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+}
+
+.mision-institucion {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.funciones-institucion {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+#information {
+    margin: 50px 0;
+    color: rgb(0, 0, 0);
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 50vh;
+    /*     overflow: hidden; */
+    justify-content: center;
+    align-items: center;
+}
+
+.information-cards {
+    margin: 50px 0;
+    display: flex;
+    width: 80%;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.card {
+    display: flex;
+    width: 30%;
+    height: 80px;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 2px 7px 13px 0px rgba(0, 0, 0, 0.2);
+    border-color: #000000;
+    font-size: 11px;
+    border-radius: 10px;
+    gap: 20px;
+    padding: 10px;
+    text-decoration: none;
+    color: rgb(42, 61, 71);
+}
+
+.card:hover {
+    background: #12bcd3b6;
+    transition: 0.1s;
+    scale: 1.05;
+}
+
+.card img {
+    width: 30px;
+}
+
+#footer {
+    display: flex;
+    width: 100%;
+    height: 40vh;
+    background: linear-gradient(to right, #00a0e5, #c30135);
+    flex-direction: column;
+    color: white;
+    justify-content: center;
+    align-items: center;
+}
+
+.footer {
+    margin: 50px 0;
+    height: 100%;
+    display: flex;
+    width: 80%;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+}
+
+.footer-img {
+    width: 50%;
+    display: flex;
+    gap: 50px;
+}
+
+.footer-img img {
+    width: 100px;
+}
+
+
+.footer-datos {
+    width: 50%;
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.footer-datos img {
+    margin-left: 5px;
+}
+
+.footer-social {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+}
+
+.footer-social img {
+    width: 20px;
+}
+
+.footer-copy {
+    background-color: #000000;
+    font-size: 12px;
+    text-align: center;
+    width: 100%;
+    padding: 20px 40px;
+}
+
+.footer-copy a {
+    color: white;
+    font-weight: bold;
+}
+
+/* ---------------------------------------------------- */
+/* --- MEDIA QUERIES: CELULARES (MÁX. 480PX) --- */
+/* ---------------------------------------------------- */
+
+@media (max-width: 480px) {
+    /* --- HEADER Y NAVEGACIÓN --- */
+    nav {
+        width: 90%; 
+        flex-direction: column; /* Apilamos logo y menú */
+        gap: 15px;
+    }
+
+    nav .logo {
+        flex-direction: column;
+        gap: 5px;
+        align-items: center;
+    }
+
+    nav ul {
+        gap: 10px;
+        padding: 0;
+    }
+
+    nav ul li a {
+        font-size: 10px; 
+    }
+
+    /* --- SECCIÓN HERO --- */
+    #hero {
+        height: 40vh; /* Reducimos la altura del hero */
+    }
+
+    .hero_content {
+        width: 90%;
+        height: 90%;
+        justify-content: center;
+        align-items: flex-end; /* Mantenemos el contenido abajo */
+        margin-bottom: 20px;
+    }
+
+    .hero_content h1 {
+        font-size: 2rem; /* Reducimos el título principal */
+        margin-bottom: 10px;
+        text-align: center;
+        width: 100%;
+    }
+    
+    /* --- SECCIÓN INSTITUCIONAL --- */
+    .datos-institucion {
+        width: 90%;
+        margin: 30px 0;
+    }
+
+    .autoridad-institucion {
+        flex-direction: column; /* Apilamos las autoridades */
+        gap: 20px;
+    }
+    
+    .autoridad-card {
+        width: 100%; /* Ocupa todo el ancho */
+        height: auto;
+        padding: 15px;
+        /* Aseguramos que la imagen y el texto se alineen bien */
+        flex-direction: row; 
+        justify-content: flex-start;
+    }
+
+    .mision-institucion, .funciones-institucion {
+        /* Aseguramos espacio entre el título y el texto */
+        gap: 10px;
+        font-size: 0.9rem;
+    }
+    
+    /* --- SECCIÓN INFORMATION (TARJETAS) --- */
+    .information-cards {
+        width: 90%;
+        flex-direction: column; /* Apilamos las tarjetas */
+    }
+
+    .card {
+        width: 90%; /* Cada tarjeta ocupa casi todo el ancho */
+        height: auto;
+        font-size: 12px;
+        padding: 15px;
+    }
+
+    /* --- SECCIÓN FOOTER --- */
+    .footer {
+        flex-direction: column; /* También apilamos las secciones del footer */
+        gap: 25px;
+        text-align: center;
+        margin: 30px 0;
+    }
+
+    .footer-img {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .footer-datos {
+        width: 100%;
+        align-items: center;
+        text-align: center;
+    }
+
+    .footer-social {
+        justify-content: center;
+    }
+}
+
+/* ---------------------------------------------------- */
+/* --- MEDIA QUERIES: TABLETS (MÁX. 768PX) --- */
+/* ---------------------------------------------------- */
+
+@media (min-width: 481px) and (max-width: 768px) {
+    /* --- GENERAL --- */
+    nav, .hero_content, .datos-institucion, .information-cards, .footer {
+        width: 90%; /* Ajustamos el ancho general a 90% */
+    }
+    
+    /* --- HEADER Y NAVEGACIÓN --- */
+    nav {
+        flex-wrap: wrap; 
+        justify-content: space-around;
+        gap: 15px;
+    }
+
+    /* --- SECCIÓN HERO --- */
+    .hero_content h1 {
+        font-size: 2.5rem; /* Título un poco más pequeño */
+    }
+
+    /* --- SECCIÓN INSTITUCIONAL --- */
+    .autoridad-institucion {
+        flex-direction: column; /* Apilamos en tablets para dar más espacio vertical a la tarjeta */
+        gap: 20px;
+    }
+    
+    .autoridad-card {
+        width: 80%; /* Más grande que en móviles, pero sigue apilado */
+        height: auto;
+        padding: 15px;
+        justify-content: flex-start;
+    }
+
+    /* --- SECCIÓN INFORMATION (TARJETAS) --- */
+    .information-cards {
+        justify-content: space-around;
+    }
+
+    .card {
+        width: 45%; /* Dos tarjetas por fila */
+        height: 90px;
+        font-size: 12px;
+    }
+
+    /* --- SECCIÓN FOOTER --- */
+    .footer {
+        flex-direction: column; 
+        gap: 20px;
+        text-align: center;
+    }
+
+    .footer-img, .footer-datos {
+        width: 100%;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .footer-datos {
+        align-items: center;
+        text-align: center;
+    }
+
+    .footer-social {
+        justify-content: center;
+    }
+}

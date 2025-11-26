@@ -1,0 +1,241 @@
+{% extends "registro/wizard_base.html" %}
+{% load static %}
+
+{% block paso_content %}
+<div class="resumen-registro">
+    <div
+        style="background: #eafaf1; padding: 20px; border-radius: 10px; border-left: 4px solid #00b894; margin-bottom: 30px;">
+        <h3 style="margin-top: 0; color: #0066ff;">⚠️ Información Importante</h3>
+        <p style="margin-bottom: 10px; font-size: 1.1rem;">
+            Al presionar "Enviar Solicitud", toda la información será enviada a la Secretaría de Deportes
+            <strong>sin posibilidad de realizar cambios posteriores</strong>.
+        </p>
+        <p style="margin-bottom: 0; font-weight: 500;">
+            La solicitud quedará a disposición de la Secretaría para su aprobación o rechazo.
+        </p>
+    </div>
+
+    <h3 style="margin-bottom: 20px;">Resumen de la Solicitud</h3>
+
+
+
+    <div class="resumen-section">
+        <h4 style="display: flex; justify-content: space-between;">📋 Datos de la Escuela <a
+                href="{% url 'escuelas:registro_wizard' 'escuela' %}"><img src="../../../../static/img/pencil.svg"
+                    width="20" height="20" alt="editar"></a> </h4>
+
+        <div id="resumenEscuela" class="resumen-datos">
+
+            <!-- Se cargará dinámicamente -->
+        </div>
+    </div>
+
+    <div class="resumen-section">
+        <h4 style="display: flex; justify-content: space-between;">🏅 Disciplinas Seleccionadas<a
+                href="{% url 'escuelas:registro_wizard' 'disciplinas' %}"><img src="../../../../static/img/pencil.svg"
+                    width="20" height="20" alt="editar"></a> </h4>
+        <div id="resumenDisciplinas" class="resumen-datos">
+            <!-- Se cargará dinámicamente -->
+
+        </div>
+    </div>
+
+    <div class="resumen-section">
+        <h4 style="display: flex; justify-content: space-between;">👨‍🏫 Entrenadores Registrados<a
+                href="{% url 'escuelas:registro_wizard' 'entrenadores' %}"><img src="../../../../static/img/pencil.svg"
+                    width="20" height="20" alt="editar"></a> </h4>
+        <div id="resumenEntrenadores" class="resumen-datos">
+            <!-- Se cargará dinámicamente -->
+        </div>
+    </div>
+
+    <div class="resumen-section">
+        <h4 style="display: flex; justify-content: space-between;">👨‍👩‍👧‍👦 Tutores Registrados<a
+                href="{% url 'escuelas:registro_wizard' 'tutores' %}"><img src="../../../../static/img/pencil.svg"
+                    width="20" height="20" alt="editar"></a> </h4>
+        <div id="resumenTutores" class="resumen-datos">
+            <!-- Se cargará dinámicamente -->
+        </div>
+    </div>
+
+    <div class="resumen-section">
+        <h4 style="display: flex; justify-content: space-between;">🎓 Alumnos Registrados<a
+                href="{% url 'escuelas:registro_wizard' 'alumnos' %}"><img src="../../../../static/img/pencil.svg"
+                    width="20" height="20" alt="editar"></a> </h4>
+        <div id="resumenAlumnos" class="resumen-datos">
+            <!-- Se cargará dinámicamente -->
+        </div>
+    </div>
+
+    <div class="form-actions" style="margin-top: 30px;">
+        <button type="button" class="btn-denegar" onclick="anteriorPaso()">
+            ← Anterior
+        </button>
+        <button type="button" id="btnEnviarSolicitud" class="btn-aprobar" onclick="enviarSolicitud()">
+            Enviar Solicitud
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function anteriorPaso() {
+        window.location.href = "{% url 'escuelas:registro_wizard' 'alumnos' %}";
+    }
+
+    function cargarResumen() {
+        const datosGuardados = cargarDesdeLocalStorage();
+
+        // Resumen Escuela
+        const resumenEscuela = document.getElementById('resumenEscuela');
+        if (datosGuardados.escuela) {
+            const escuela = datosGuardados.escuela;
+            resumenEscuela.innerHTML = `
+                <p><strong>Nombre:</strong> ${escuela.nombre_esc}</p>
+                <p><strong>Localidad:</strong> ${escuela.localidad}</p>
+                <p><strong>Dirección:</strong> ${escuela.direccion}</p>
+                <p><strong>Email:</strong> ${escuela.email}</p>
+                <p><strong>Teléfono:</strong> ${escuela.telefono1}</p>
+            `;
+        } else {
+            resumenEscuela.innerHTML = '<p style="color: #e84118;">No se encontraron datos de la escuela</p>';
+        }
+
+        // Resumen Disciplinas
+        const resumenDisciplinas = document.getElementById('resumenDisciplinas');
+        if (datosGuardados.disciplinas && datosGuardados.disciplinas.nombres) {
+            const lista = datosGuardados.disciplinas.nombres.map(nombre =>
+                `<span class="badge">${nombre}</span>`
+            ).join('');
+            resumenDisciplinas.innerHTML = lista;
+        } else {
+            resumenDisciplinas.innerHTML = '<p style="color: #e84118;">No se seleccionaron disciplinas</p>';
+        }
+
+        // Resumen Entrenadores
+        const resumenEntrenadores = document.getElementById('resumenEntrenadores');
+        if (datosGuardados.entrenadores && datosGuardados.entrenadores.length > 0) {
+            const count = datosGuardados.entrenadores.length;
+            resumenEntrenadores.innerHTML = `<p><strong>Total:</strong> ${count} entrenador(es) registrado(s)</p>`;
+        } else {
+            resumenEntrenadores.innerHTML = '<p style="color: #e84118;">No se registraron entrenadores</p>';
+        }
+
+        // Resumen Tutores
+        const resumenTutores = document.getElementById('resumenTutores');
+        if (datosGuardados.tutores && datosGuardados.tutores.length > 0) {
+            const count = datosGuardados.tutores.length;
+            resumenTutores.innerHTML = `<p><strong>Total:</strong> ${count} tutor(es) registrado(s)</p>`;
+        } else {
+            resumenTutores.innerHTML = '<p style="color: #e84118;">No se registraron tutores</p>';
+        }
+
+        // Resumen Alumnos
+        const resumenAlumnos = document.getElementById('resumenAlumnos');
+        if (datosGuardados.alumnos && datosGuardados.alumnos.length > 0) {
+            const count = datosGuardados.alumnos.length;
+            resumenAlumnos.innerHTML = `<p><strong>Total:</strong> ${count} alumno(s) registrado(s)</p>`;
+        } else {
+            resumenAlumnos.innerHTML = '<p style="color: #e84118;">No se registraron alumnos</p>';
+        }
+    }
+
+    function enviarSolicitud() {
+        if (!confirm('¿Está seguro de enviar la solicitud? Esta acción no se puede deshacer.')) {
+            return;
+        }
+
+        const btnEnviar = document.getElementById('btnEnviarSolicitud');
+        btnEnviar.disabled = true;
+        btnEnviar.textContent = 'Enviando...';
+
+        // Obtener todos los datos del localStorage
+        const datosCompletos = cargarDesdeLocalStorage();
+        console.log("Datos a enviar:", datosCompletos);  // Para debug
+
+        // Validar que todos los pasos estén completos
+        const pasosRequeridos = ['escuela', 'disciplinas', 'entrenadores', 'tutores', 'alumnos'];
+        const pasosFaltantes = pasosRequeridos.filter(paso => !datosCompletos[paso]);
+
+        if (pasosFaltantes.length > 0) {
+            showToast(`Complete los siguientes pasos antes de enviar: ${pasosFaltantes.join(', ')}`, 'error');
+            btnEnviar.disabled = false;
+            btnEnviar.textContent = 'Enviar Solicitud';
+            return;
+        }
+
+        // Enviar datos al servidor
+        fetch("{% url 'escuelas:finalizar_registro' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(datosCompletos)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    limpiarLocalStorage();
+
+                    // Redirigir a la página de estado después de 2 segundos
+                    setTimeout(() => {
+                        window.location.href = "{% url 'escuelas:estado' %}";
+                    }, 2000);
+                } else {
+                    throw new Error(data.error || 'Error al enviar la solicitud');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Error al enviar la solicitud: ' + error.message, 'error');
+                btnEnviar.disabled = false;
+                btnEnviar.textContent = 'Enviar Solicitud';
+            });
+    }
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', function () {
+        cargarResumen();
+    });
+</script>
+
+<style>
+    .resumen-section {
+        margin-bottom: 25px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #f8f9fa;
+    }
+
+    .resumen-section h4 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        color: #0066ff;
+        border-bottom: 2px solid #0066ff;
+        padding-bottom: 5px;
+    }
+
+    .resumen-datos p {
+        margin: 5px 0;
+    }
+
+    .badge {
+        display: inline-block;
+        background: #0066ff;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+        margin: 2px;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}

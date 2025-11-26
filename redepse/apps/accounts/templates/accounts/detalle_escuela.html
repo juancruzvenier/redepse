@@ -1,0 +1,408 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Detalles de Escuela</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'accounts/css/admin.css' %}" />
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="logo">
+          <img src="{% static 'accounts/img/logo.jpeg' %}" alt="Logo" />
+          <h2>REDEPSE</h2>
+        </div>
+        <nav>
+          <ul>
+            <li>
+              <a
+                href="{% url 'accounts:admin_dashboard' %}"
+                class="sidebar-link {% if origen == 'admin_dashboard' %}active{% endif %}"
+              >
+                Escuelas Registradas
+              </a>
+            </li>
+            <li>
+              <a
+                href="{% url 'accounts:solicitudes_pendientes' %}"
+                class="sidebar-link {% if origen == 'solicitudes_pendientes' %}active{% endif %}"
+              >
+                Solicitudes Pendientes
+              </a>
+            </li>
+
+            <li><a href="{% url 'accounts:entrenadores_registrados' %}" class="sidebar-link">Entrenadores</a></li>
+            <li><a href="#" class="sidebar-link" onclick="abrirModalCapacitacion(event)">Capacitaciones</a></li>           
+          </ul>
+        </nav>
+        <div class="logout">
+          <a href="{% url 'accounts:logout' %}">Cerrar sesión</a>
+        </div>
+      </aside>
+
+      <!-- Contenido principal -->
+      <main class="content">
+        <header>
+          <h1>Administrador</h1>
+        </header>
+
+        <section class="school-details">
+          <h2>{{ escuela.nombre_esc }}</h2>
+
+          <!-- Botones principales -->
+          <div class="cards">
+            <div
+              class="card"
+              onclick="marcarActiva(this); mostrarDatosGenerales()"
+            >
+              Datos Generales
+            </div>
+            <div
+              class="card"
+              onclick="marcarActiva(this); mostrarHabilitaciones()"
+            >
+              Habilitaciones
+            </div>
+            <div
+              class="card"
+              onclick="marcarActiva(this); mostrarDisciplinas()"
+            >
+              Disciplinas
+            </div>
+            <div
+              class="card"
+              onclick="marcarActiva(this); mostrarEntrenadores()"
+            >
+              Entrenadores
+            </div>
+            <div class="card" onclick="marcarActiva(this); mostrarAlumnos()">
+              Alumnos
+            </div>
+            <div class="card" onclick="marcarActiva(this); mostrarTutores()">
+              Tutores
+            </div>
+          </div>
+
+          <!-- Contenedor donde se mostrará la información dinámica -->
+          <div id="info-container" class="info-container"></div>
+
+          {% if origen == 'solicitudes_pendientes' %}
+          <a href="{% url 'accounts:solicitudes_pendientes' %}" class="back-btn"
+            >⬅ Volver</a
+          >
+          {% else %}
+          <a href="{% url 'accounts:admin_dashboard' %}" class="back-btn"
+            >⬅ Volver</a
+          >
+          {% endif %}
+        </section>
+      </main>
+    </div>
+
+    <!-- Scripts de funciones dinámicas -->
+    <script>
+        function mostrarDatosGenerales() {
+          const data = {
+            nombre: "{{ escuela.nombre_esc }}",
+            localidad: "{{ escuela.localidad }}",
+            direccion: "{{ escuela.direccion }}",
+            estado: "{{ escuela.estado }}",
+            telefono1: "{{ escuela.telefono1 }}",
+            telefono2: "{{ escuela.telefono2|default:'—' }}",
+            email: "{{ escuela.email }}"
+          };
+
+          const html = `
+            <div class="datos-generales">
+              <h3>Datos Generales</h3>
+              <p><strong>Nombre:</strong> ${data.nombre}</p>
+              <p><strong>Localidad:</strong> ${data.localidad}</p>
+              <p><strong>Dirección:</strong> ${data.direccion}</p>
+              <p><strong>Estado:</strong> ${data.estado}</p>
+              <p><strong>Tel. Escuela:</strong> ${data.telefono1}</p>
+              <p><strong>Tel. Responsable:</strong> ${data.telefono2}</p>
+              <p><strong>Correo:</strong> ${data.email}</p>
+            </div>
+          `;
+
+          const info = document.getElementById("info-container");
+          info.innerHTML = html;
+          info.style.display = "block"; // Se muestra recién cuando tocas una opción
+        }
+
+        function mostrarEntrenadores() {
+          const entrenadores = [
+            {% for ent in entrenadores %}
+              {
+                nombre: "{{ ent.nombre }}",
+                apellido: "{{ ent.apellido }}",
+                email: "{{ ent.email }}",
+                telefono1: "{{ ent.telefono1 }}",
+                telefono2: "{{ ent.telefono2|default:'—' }}"
+              }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+          ];
+
+          let html = "<h3>Entrenadores</h3>";
+
+          if (entrenadores.length === 0) {
+            html += "<p>No hay entrenadores registrados para esta escuela.</p>";
+          } else {
+            html += "<ul>";
+            entrenadores.forEach(ent => {
+              html += `<li><strong>${ent.nombre} ${ent.apellido}</strong> — ${ent.email} — ${ent.telefono1}</li>`;
+            });
+            html += "</ul>";
+          }
+
+          const info = document.getElementById("info-container");
+          info.innerHTML = html;
+          info.style.display = "block";
+        }
+
+        function mostrarHabilitaciones() {
+          const solicitud = {
+            id: "{{ solicitud.id_solicitud|default:'-' }}",
+            estado: "{{ solicitud.estado|default:'Sin solicitud registrada' }}"
+          };
+
+          let html = `
+            <div class="habilitaciones">
+              <h3>Habilitaciones</h3>
+          `;
+
+          if (solicitud.estado === "Sin solicitud registrada") {
+            html += `<p>No hay solicitudes registradas para esta escuela.</p>`;
+          } else {
+            html += `
+              <p><strong>ID Solicitud:</strong> ${solicitud.id}</p>
+              <p><strong>Estado:</strong> ${solicitud.estado}</p>
+            `;
+          }
+
+          html += `</div>`;
+
+          const info = document.getElementById("info-container");
+          info.innerHTML = html;
+          info.style.display = "block";
+        }
+
+        function mostrarAlumnos() {
+        const alumnos = [
+          {% for alu in alumnos %}
+            {
+              nombre: "{{ alu.nombre }}",
+              apellido: "{{ alu.apellido }}",
+              dni: "{{ alu.dni_alumno }}",
+              fecha_nac: "{{ alu.fecha_nac }}",
+              estado: "{{ alu.estado }}"
+            }{% if not forloop.last %},{% endif %}
+          {% endfor %}
+        ];
+
+        let html = "<h3>Alumnos</h3>";
+
+        if (alumnos.length === 0) {
+          html += "<p>No hay alumnos registrados para esta escuela.</p>";
+        } else {
+          html += `
+            <table class='tabla-alumnos'>
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Apellido</th>
+                  <th>DNI</th>
+                  <th>Fecha Nac.</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+          alumnos.forEach(a => {
+            html += `
+              <tr>
+                <td>${a.nombre}</td>
+                <td>${a.apellido}</td>
+                <td>${a.dni}</td>
+                <td>${a.fecha_nac}</td>
+                <td>${a.estado}</td>
+              </tr>
+            `;
+          });
+          html += "</tbody></table>";
+        }
+
+        const info = document.getElementById("info-container");
+        info.innerHTML = html;
+        info.style.display = "block";
+      }
+
+      function mostrarEntrenadores() {
+  const entrenadores = [
+    {% for ent in entrenadores %}
+      {
+        nombre: "{{ ent.nombre }}",
+        apellido: "{{ ent.apellido }}",
+        email: "{{ ent.email }}",
+        telefono1: "{{ ent.telefono1|default:'-' }}",
+        telefono2: "{{ ent.telefono2|default:'-' }}"
+      }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
+
+  let html = "<h3>Entrenadores</h3>";
+
+  if (entrenadores.length === 0) {
+    html += "<p>No hay entrenadores registrados para esta escuela.</p>";
+  } else {
+    html += `
+      <table class="tabla-alumnos">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Email</th>
+            <th>Teléfono 1</th>
+            <th>Teléfono 2</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    entrenadores.forEach(e => {
+      html += `
+        <tr>
+          <td>${e.nombre}</td>
+          <td>${e.apellido}</td>
+          <td>${e.email}</td>
+          <td>${e.telefono1}</td>
+          <td>${e.telefono2}</td>
+        </tr>
+      `;
+    });
+    html += "</tbody></table>";
+  }
+
+  const info = document.getElementById("info-container");
+  info.innerHTML = html;
+  info.style.display = "block";
+}
+
+
+
+      function mostrarTutores() {
+        const tutores = [
+          {% for t in tutores %}
+            {
+              nombre: "{{ t.nombre }}",
+              apellido: "{{ t.apellido }}",
+              email: "{{ t.email }}",
+              telefono1: "{{ t.telefono1 }}",
+              telefono2: "{{ t.telefono2|default:'—' }}"
+            }{% if not forloop.last %},{% endif %}
+          {% endfor %}
+        ];
+
+        let html = "<h3>Tutores</h3>";
+
+        if (tutores.length === 0) {
+          html += "<p>No hay tutores registrados para esta escuela.</p>";
+        } else {
+          html += `
+            <table class='tabla-alumnos'>
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Apellido</th>
+                  <th>Email</th>
+                  <th>Teléfono</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+          tutores.forEach(t => {
+            html += `
+              <tr>
+                <td>${t.nombre}</td>
+                <td>${t.apellido}</td>
+                <td>${t.email}</td>
+                <td>${t.telefono1}</td>
+              </tr>
+            `;
+          });
+          html += "</tbody></table>";
+        }
+
+        const info = document.getElementById("info-container");
+        info.innerHTML = html;
+        info.style.display = "block";
+      }
+
+      function mostrarDisciplinas() {
+        const disciplinas = [
+          {% for d in disciplinas %}
+            {
+              nombre: "{{ d.disciplina }}"
+            }{% if not forloop.last %},{% endif %}
+          {% endfor %}
+        ];
+
+        let html = "<h3>Disciplinas</h3>";
+
+        if (disciplinas.length === 0) {
+          html += "<p>No hay disciplinas registradas para esta escuela.</p>";
+        } else {
+          html += "<ul>";
+          disciplinas.forEach(d => {
+            html += `<li>${d.nombre}</li>`;
+          });
+          html += "</ul>";
+        }
+
+        const info = document.getElementById("info-container");
+        info.innerHTML = html;
+        info.style.display = "block";
+      }
+
+
+      // ---- Resaltar card activa ----
+      function marcarActiva(elemento) {
+        // Quitamos la clase 'active-card' de todas
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(c => c.classList.remove('active-card'));
+
+        // Agregamos la clase solo a la que se hizo clic
+        elemento.classList.add('active-card');
+      }
+
+      function abrirModalCapacitacion(e){ if(e) e.preventDefault(); document.getElementById('modal-capacitacion').style.display='block'; }
+function cerrarModalCapacitacion(){ document.getElementById('modal-capacitacion').style.display='none'; document.getElementById('capacitacion-status').innerHTML=''; }
+
+document.getElementById('form-capacitacion').addEventListener('submit', async function(ev){
+  ev.preventDefault();
+  const form = ev.target;
+  const status = document.getElementById('capacitacion-status');
+  const data = new FormData(form);
+  status.innerHTML = 'Enviando...';
+  try {
+    const resp = await fetch("{% url 'accounts:enviar_capacitacion' %}", {
+      method: 'POST',
+      headers: {'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value},
+      body: data
+    });
+    const json = await resp.json();
+    if (!resp.ok) throw new Error(json.error || 'Error al enviar');
+    status.innerHTML = `Enviado a ${json.enviados} escuelas.`;
+  } catch (err) {
+    status.innerHTML = `<span style="color:red;">${err.message}</span>`;
+  }
+});
+    </script>
+
+    <!-- Modal de Capacitaciones -->
+    {% include 'accounts/includes/modal_capacitacion.html' %}
+
+  </body>
+</html>

@@ -1,0 +1,60 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Iniciar sesión</title>
+    <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}" />
+  </head>
+  <body>
+    <div class="auth-container">
+      <img src="{% static 'accounts/img/LOGO_REDEPSE.png' %}" alt="Logo" />
+      <h1>Iniciar Sesión</h1>
+
+      {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+        <p class="{{ message.tags }}">{{ message }}</p>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <form method="POST">
+        {% csrf_token %}
+        <input
+          type="email"
+          name="username"
+          placeholder="Correo electrónico"
+          required
+        />
+        <div class="password-wrapper">
+          <input
+            type="password"
+            id="login_password"
+            name="password"
+            placeholder="Contraseña"
+            required
+          />
+          <button type="button" class="toggle-pass" onclick="togglePass('login_password', this)">👁</button>
+        </div>
+        <input type="submit" value="Iniciar sesión" />
+      </form>
+      <a href="{% url 'accounts:register' %}">¿No tienes cuenta? Regístrate</a> <br>
+      <a href="{% url 'accounts:password_reset' %}" class="link-recuperar">¿Olvidaste tu contraseña? Recupérala aquí</a>
+      <a target="_blank" href="../../../../static/files/INSTRUCTIVO.pdf">¿No sabes cómo empezar? Descarga el instructivo</a>
+      <a href="{% url 'home' %}">Volver a la página principal</a>
+      
+      <script>
+        function togglePass(id, btn) {
+          const input = document.getElementById(id);
+          const isPass = input.type === 'password';
+          input.type = isPass ? 'text' : 'password';
+          btn.textContent = isPass ? '🙈' : '👁';
+        }
+      </script>
+      
+  
+</html>
