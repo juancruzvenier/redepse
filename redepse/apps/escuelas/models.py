@@ -140,7 +140,7 @@ class Participacion(models.Model):
 
 
 class Periodo(models.Model):
-    id_periodo = models.IntegerField(primary_key=True, unique=True)
+    periodo = models.IntegerField(primary_key=True, unique=True)
 
     class Meta:
         db_table = 'periodo'

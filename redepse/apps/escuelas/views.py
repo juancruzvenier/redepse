@@ -14,6 +14,7 @@ import base64
 from django.core.files.base import ContentFile
 from django.utils import timezone
 from storages.backends.s3boto3 import S3Boto3Storage
+from django.core.files.storage import FileSystemStorage
 
 
 @method_decorator(login_required, name='dispatch')
@@ -92,8 +93,20 @@ def guardar_paso(request, paso):
 def finalizar_registro(request):
     if request.method == 'POST':
         try:
-            # Obtener datos del JSON del body (no de session)
-            datos_completos = json.loads(request.body)
+            # === DEBUG: VER SI LLEGAN LOS ARCHIVOS ===
+            print("--- INICIO DEBUG FINALIZAR REGISTRO ---")
+            print(f"FILES recibidos: {request.FILES.keys()}")
+            if 'nota_secretario' in request.FILES:
+                print(f"Nota: {request.FILES['nota_secretario'].name} - Size: {request.FILES['nota_secretario'].size}")
+            else:
+                print("⚠️ NO LLEGÓ nota_secretario en request.FILES")
+            
+            # Obtener datos del FormData
+            datos_json = request.POST.get('datos_json')
+            if not datos_json:
+                return JsonResponse({'success': False, 'error': 'No se recibieron datos'}, status=400)
+                
+            datos_completos = json.loads(datos_json)
             print("Datos recibidos:", datos_completos)
             
             with transaction.atomic():
@@ -110,7 +123,45 @@ def finalizar_registro(request):
                     estado='pendiente'
                 )
 
-                # 2. Guardar responsable
+                # === ACÁ ESTÁ EL CAMBIO CLAVE ===
+                # Configuramos R2 manualmente para forzarlo, igual que en el test
+                r2_storage = S3Boto3Storage(
+                    access_key=os.getenv('R2_ACCESS_KEY_ID'),
+                    secret_key=os.getenv('R2_SECRET_ACCESS_KEY'),
+                    bucket_name=os.getenv('R2_BUCKET_NAME'),
+                    endpoint_url=os.getenv('R2_ENDPOINT_URL'),
+                    region_name='auto',
+                    default_acl='private',
+                    signature_version='s3v4'
+                )
+
+                # 2. GUARDAR ARCHIVOS REALES FORZANDO EL STORAGE
+                if 'nota_secretario' in request.FILES:
+                    nota_file = request.FILES['nota_secretario']
+                    
+                    # Creamos la instancia SIN guardar el archivo todavía
+                    doc_nota = Documento(
+                        id_esc=escuela,
+                        tipo='nota_secretario'
+                    )
+                    # Le inyectamos el storage de R2 al campo
+                    doc_nota.documento.storage = r2_storage
+                    # Guardamos el archivo manualmente en ese campo
+                    doc_nota.documento.save(nota_file.name, nota_file)
+                    print(f"✅ Nota secretario subida a R2: {doc_nota.documento.url}")
+                
+                if 'respaldo_institucional' in request.FILES:
+                    respaldo_file = request.FILES['respaldo_institucional']
+                    
+                    doc_respaldo = Documento(
+                        id_esc=escuela,
+                        tipo='respaldo_institucional'
+                    )
+                    doc_respaldo.documento.storage = r2_storage
+                    doc_respaldo.documento.save(respaldo_file.name, respaldo_file)
+                    print(f"✅ Respaldo subido a R2: {doc_respaldo.documento.url}")
+
+                # 3. Guardar responsable
                 if escuela_data.get('dni_resp'):
                     try:
                         responsable, created = Responsable.objects.get_or_create(
@@ -122,50 +173,10 @@ def finalizar_registro(request):
                                 'telefono1': escuela_data.get('resp_telefono1'),
                             }
                         )
-                        # Opcional: Asignar responsable a la escuela si tu modelo tiene la FK
-                        # escuela.dni_resp = responsable
-                        # escuela.save()
                         print(f"✅ Responsable guardado: {responsable.nombre} {responsable.apellido}")
                     except Exception as e:
                         print(f"❌ Error al guardar responsable: {str(e)}")
-                
-                # 3. Guardar documentos
-                documentacion_data = datos_completos.get('documentacion')
-                if documentacion_data:
-                    # Guardar nota al secretario
-                    if documentacion_data.get('nota_secretario'):
-                        try:
-                            nota_data = documentacion_data['nota_secretario']
-                            file_data = base64.b64decode(nota_data['datos'])
-                            file_name = f"nota_secretario_{timezone.now().strftime('%Y%m%d_%H%M%S')}_{nota_data['nombre']}"
-                            
-                            file_content = ContentFile(file_data, name=file_name)
-                            Documento.objects.create(
-                                id_esc=escuela,
-                                documento=file_content,
-                                tipo='nota_secretario'
-                            )
-                            print(f"✅ Nota secretario subida: {file_name}")
-                        except Exception as e:
-                            print(f"❌ Error al subir nota secretario: {str(e)}")
-                    
-                    # Guardar respaldo institucional
-                    if documentacion_data.get('respaldo_institucional'):
-                        try:
-                            respaldo_data = documentacion_data['respaldo_institucional']
-                            file_data = base64.b64decode(respaldo_data['datos'])
-                            file_name = f"respaldo_institucional_{timezone.now().strftime('%Y%m%d_%H%M%S')}_{respaldo_data['nombre']}"
-                            
-                            file_content = ContentFile(file_data, name=file_name)
-                            Documento.objects.create(
-                                id_esc=escuela,
-                                documento=file_content,
-                                tipo='respaldo_institucional'
-                            )
-                            print(f"✅ Respaldo institucional subido: {file_name}")
-                        except Exception as e:
-                            print(f"❌ Error al subir respaldo institucional: {str(e)}")
-
+                        
                 # 4. Obtener periodo actual
                 from datetime import datetime
                 año_actual = datetime.now().year
@@ -204,10 +215,11 @@ def finalizar_registro(request):
                         id_periodo=periodo
                     )
                 
-                # 7. Guardar tutores
+                # 7. Guardar tutores y crear un diccionario para búsqueda rápida
+                tutores_dict = {}
                 tutores_data = datos_completos.get('tutores', [])
                 for tutor_data in tutores_data:
-                    Tutor.objects.create(
+                    tutor = Tutor.objects.create(
                         dni_tutor=tutor_data.get('dni_tutor'),
                         nombre=tutor_data.get('nombre'),
                         apellido=tutor_data.get('apellido'),
@@ -215,17 +227,32 @@ def finalizar_registro(request):
                         telefono1=tutor_data.get('telefono1', ''),
                         domicilio=tutor_data.get('domicilio', '')
                     )
+                    tutores_dict[tutor_data.get('dni_tutor')] = tutor
+                    print(f"✅ Tutor guardado: {tutor.nombre} {tutor.apellido}")
                 
-                # 8. Guardar alumnos
+                # 8. Guardar alumnos - CORREGIDO: buscar instancia de Tutor
                 alumnos_data = datos_completos.get('alumnos', [])
                 for alumno_data in alumnos_data:
+                    # Obtener la instancia del tutor usando el DNI
+                    dni_tutor_str = alumno_data.get('tutor')
+                    tutor_instance = None
+                    
+                    if dni_tutor_str and dni_tutor_str in tutores_dict:
+                        tutor_instance = tutores_dict[dni_tutor_str]
+                    elif dni_tutor_str:
+                        # Intentar buscar el tutor en la base de datos si no está en los recién creados
+                        try:
+                            tutor_instance = Tutor.objects.get(dni_tutor=dni_tutor_str)
+                        except Tutor.DoesNotExist:
+                            print(f"⚠️ Tutor con DNI {dni_tutor_str} no encontrado")
+                    
                     alumno = Alumno.objects.create(
                         dni_alumno=alumno_data.get('dni_alumno'),
                         nombre=alumno_data.get('nombre'),
                         apellido=alumno_data.get('apellido'),
                         fecha_nac=alumno_data.get('fecha_nac'),
                         domicilio=alumno_data.get('domicilio', ''),
-                        dni_tutor=alumno_data.get('tutor')  # Asegurate que este campo existe
+                        dni_tutor=tutor_instance  # ✅ Ahora es una instancia de Tutor, no un string
                     )
                     
                     Inscripcion.objects.create(
@@ -240,6 +267,8 @@ def finalizar_registro(request):
                             id_esc=escuela,
                             id_periodo=periodo
                         )
+                    
+                    print(f"✅ Alumno guardado: {alumno.nombre} {alumno.apellido}")
                 
                 # 9. Crear solicitud
                 solicitud = Solicitudes.objects.create(
@@ -247,7 +276,6 @@ def finalizar_registro(request):
                     estado='Pendiente'
                 )
             
-            # Limpiar localStorage del frontend (se maneja desde el JavaScript)
             return JsonResponse({
                 'success': True, 
                 'message': 'Solicitud enviada exitosamente',
