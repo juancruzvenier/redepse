@@ -81,7 +81,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Periodo',
             fields=[
-                ('periodo', models.IntegerField(primary_key=True, serialize=False, unique=True)),
+                ('id_periodo', models.IntegerField(primary_key=True, serialize=False, unique=True)),
             ],
             options={
                 'db_table': 'periodo',

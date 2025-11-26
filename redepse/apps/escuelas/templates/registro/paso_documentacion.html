@@ -1,116 +1,347 @@
-{% extends "registro/wizard_base.html" %}
-{% load static %}
-
+{% extends "registro/wizard_base.html" %} {% load static %}
 {% block paso_content %}
 <form id="formDocumentacion" class="form-registro">
-    {% csrf_token %}
-    
+  {% csrf_token %}
+
+  <div class="form-grid">
     <div class="form-field">
-        <label for="documento">Nota al secretario Dapello *</label>
-        <input type="file" id="documento" name="documento" class="form-control" required 
-               accept=".doc,.docx,.pdf">
-        <small style="color: #666;">Formatos aceptados: .doc, .docx, .pdf</small>
+      <label for="nota_secretario">Nota al secretario Dapello *</label>
+      <input
+        type="file"
+        id="nota_secretario"
+        name="nota_secretario"
+        class="form-control"
+        required
+        accept=".doc,.docx,.pdf"
+      />
+      <small style="color: #666">Formatos aceptados: .doc, .docx, .pdf</small>
+
+      <!-- Vista previa del documento -->
+      <div
+        id="previewNota"
+        class="document-preview"
+        style="display: none; margin-top: 10px"
+      >
+        <a
+          id="linkNota"
+          target="_blank"
+          style="color: #0066ff; text-decoration: none"
+        >
+          📄 <span id="nombreNota"></span>
+        </a>
+        <button
+          type="button"
+          onclick="eliminarDocumento('nota_secretario')"
+          style="
+            margin-left: 10px;
+            color: #e84118;
+            border: none;
+            background: none;
+            cursor: pointer;
+          "
+        >
+          🗑️
+        </button>
+      </div>
     </div>
 
-    <div style="background: #eafaf1; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #00b894;">
-        <h4 style="margin-top: 0; color: #0066ff;">📋 Información importante</h4>
-        <p style="margin-bottom: 0;">Suba la nota formal dirigida al secretario Dapello solicitando la habilitación de su escuela deportiva.</p>
-    </div>
+    <div class="form-field">
+      <label for="respaldo_institucional">Respaldo institucional *</label>
+      <input
+        type="file"
+        id="respaldo_institucional"
+        name="respaldo_institucional"
+        class="form-control"
+        required
+        accept=".doc,.docx,.pdf"
+      />
+      <small style="color: #666">Formatos aceptados: .doc, .docx, .pdf</small>
 
-    <div class="form-actions">
-        <button type="button" class="btn-denegar" onclick="anteriorPaso()">
-            ← Anterior
+      <!-- Vista previa del documento -->
+      <div
+        id="previewRespaldo"
+        class="document-preview"
+        style="display: none; margin-top: 10px"
+      >
+        <a
+          id="linkRespaldo"
+          target="_blank"
+          style="color: #0066ff; text-decoration: none"
+        >
+          📄 <span id="nombreRespaldo"></span>
+        </a>
+        <button
+          type="button"
+          onclick="eliminarDocumento('respaldo_institucional')"
+          style="
+            margin-left: 10px;
+            color: #e84118;
+            border: none;
+            background: none;
+            cursor: pointer;
+          "
+        >
+          🗑️
         </button>
-        <button type="button" id="btnGuardarDocumentacion" class="btn-guardar" onclick="guardarDocumentacion()">
-            Guardar
-        </button>
-        <button type="button" id="btnSiguienteDocumentacion" class="btn-siguiente" onclick="siguientePaso()" disabled>
-            Siguiente →
-        </button>
+      </div>
     </div>
+  </div>
+
+  <div
+    style="
+      background: #eafaf1;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      border-left: 4px solid #00b894;
+    "
+  >
+    <h4 style="margin-top: 0; color: #0066ff">📋 Documentación Requerida</h4>
+    <ul style="margin-bottom: 0">
+      <li>
+        <strong>Nota al secretario Dapello:</strong> Solicitud formal de
+        habilitación
+      </li>
+      <li>
+        <strong>Respaldo institucional:</strong> Documentación que acredite la
+        institución
+      </li>
+    </ul>
+  </div>
+
+  <div class="form-actions">
+    <button type="button" class="btn-denegar" onclick="anteriorPaso()">
+      ← Anterior
+    </button>
+    <button
+      type="button"
+      id="btnGuardarDocumentacion"
+      class="btn-guardar"
+      onclick="guardarDocumentacion()"
+    >
+      Guardar
+    </button>
+    <button
+      type="button"
+      id="btnSiguienteDocumentacion"
+      class="btn-siguiente"
+      onclick="siguientePaso()"
+      disabled
+    >
+      Siguiente →
+    </button>
+  </div>
 </form>
-{% endblock %}
-
-{% block extra_scripts %}
+{% endblock %} {% block extra_scripts %}
 <script>
-    let documentacionGuardada = false;
+  let documentacionGuardada = false;
 
-    function anteriorPaso() {
-        window.location.href = "{% url 'escuelas:registro_wizard' 'escuela' %}";
-    }
+  function anteriorPaso() {
+    window.location.href = "{% url 'escuelas:registro_wizard' 'escuela' %}";
+  }
 
-    function guardarDocumentacion() {
-        const fileInput = document.getElementById('documento');
-        
-        if (!fileInput.files.length) {
-            showToast('Seleccione un archivo', 'error');
-            return;
-        }
+  // Configurar vista previa para ambos documentos
+  document.addEventListener("DOMContentLoaded", function () {
+    const notaInput = document.getElementById("nota_secretario");
+    const respaldoInput = document.getElementById("respaldo_institucional");
 
-        const file = fileInput.files[0];
-        const ext = file.name.split('.').pop().toLowerCase();
-        
-        if (!['doc', 'docx', 'pdf'].includes(ext)) {
-            showToast('Solo se permiten archivos .doc, .docx o .pdf', 'error');
-            return;
-        }
-
-        // Convertir archivo a base64 para localStorage
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const documentoData = {
-                nombre: file.name,
-                tipo: file.type,
-                datos: e.target.result.split(',')[1], // Remover el prefijo data:...
-                tamaño: file.size
-            };
-            
-            guardarEnLocalStorage({ documentacion: documentoData });
-            documentacionGuardada = true;
-            
-            // Actualizar estado de botones
-            document.getElementById('btnGuardarDocumentacion').disabled = true;
-            document.getElementById('btnSiguienteDocumentacion').disabled = false;
-            document.getElementById('btnSiguienteDocumentacion').classList.remove('btn-siguiente');
-            document.getElementById('btnSiguienteDocumentacion').classList.add('btn-aprobar');
-            
-            showToast('Documentación guardada correctamente');
-        };
-        reader.readAsDataURL(file);
-    }
-
-    function siguientePaso() {
-        if (documentacionGuardada) {
-            window.location.href = "{% url 'escuelas:registro_wizard' 'disciplinas' %}";
-        } else {
-            showToast('Debe guardar la documentación antes de continuar', 'error');
-        }
-    }
-
-    // Inicializar
-    document.addEventListener('DOMContentLoaded', function() {
-        const datosGuardados = cargarDesdeLocalStorage();
-        if (datosGuardados.documentacion) {
-            documentacionGuardada = true;
-            document.getElementById('btnSiguienteDocumentacion').disabled = false;
-            document.getElementById('btnSiguienteDocumentacion').classList.remove('btn-siguiente');
-            document.getElementById('btnSiguienteDocumentacion').classList.add('btn-aprobar');
-            
-            // Mostrar nombre del archivo cargado
-            const fileInput = document.getElementById('documento');
-            fileInput.disabled = true;
-            fileInput.nextElementSibling.textContent = `Archivo cargado: ${datosGuardados.documentacion.nombre}`;
-        }
-
-        // Configurar detección de cambios
-        const fileInput = document.getElementById('documento');
-        const btnGuardar = document.getElementById('btnGuardarDocumentacion');
-        
-        fileInput.addEventListener('change', function() {
-            btnGuardar.disabled = false;
-            btnGuardar.classList.remove('btn-guardar');
-            btnGuardar.classList.add('btn-aprobar');
-        });
+    // Configurar nota secretario
+    notaInput.addEventListener("change", function (e) {
+      manejarSeleccionArchivo(e, "nota_secretario");
+      verificarDocumentosCompletos();
     });
+
+    // Configurar respaldo institucional
+    respaldoInput.addEventListener("change", function (e) {
+      manejarSeleccionArchivo(e, "respaldo_institucional");
+      verificarDocumentosCompletos();
+    });
+
+    // Cargar documentos guardados
+    cargarDocumentosGuardados();
+  });
+
+  function manejarSeleccionArchivo(event, tipo) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const ext = file.name.split(".").pop().toLowerCase();
+    if (!["doc", "docx", "pdf"].includes(ext)) {
+      showToast("Solo se permiten archivos .doc, .docx o .pdf", "error");
+      event.target.value = "";
+      return;
+    }
+
+    // Crear URL temporal para vista previa
+    const url = URL.createObjectURL(file);
+
+    if (tipo === "nota_secretario") {
+      document.getElementById("previewNota").style.display = "block";
+      document.getElementById("linkNota").href = url;
+      document.getElementById("nombreNota").textContent = file.name;
+    } else {
+      document.getElementById("previewRespaldo").style.display = "block";
+      document.getElementById("linkRespaldo").href = url;
+      document.getElementById("nombreRespaldo").textContent = file.name;
+    }
+
+    // Habilitar botón guardar
+    document.getElementById("btnGuardarDocumentacion").disabled = false;
+    document
+      .getElementById("btnGuardarDocumentacion")
+      .classList.remove("btn-guardar");
+    document
+      .getElementById("btnGuardarDocumentacion")
+      .classList.add("btn-aprobar");
+  }
+
+  function eliminarDocumento(tipo) {
+    const input = document.getElementById(tipo);
+    const preview = document.getElementById(
+      "preview" + tipo.charAt(0).toUpperCase() + tipo.slice(1)
+    );
+
+    input.value = "";
+    preview.style.display = "none";
+
+    // Liberar URL temporal
+    if (tipo === "nota_secretario") {
+      URL.revokeObjectURL(document.getElementById("linkNota").href);
+    } else {
+      URL.revokeObjectURL(document.getElementById("linkRespaldo").href);
+    }
+
+    verificarDocumentosCompletos();
+  }
+
+  function verificarDocumentosCompletos() {
+    const nota = document.getElementById("nota_secretario").files.length;
+    const respaldo = document.getElementById("respaldo_institucional").files
+      .length;
+    const todosCompletos = nota > 0 && respaldo > 0;
+
+    return todosCompletos;
+  }
+
+  function guardarDocumentacion() {
+    const notaFile = document.getElementById("nota_secretario").files[0];
+    const respaldoFile = document.getElementById("respaldo_institucional")
+      .files[0];
+
+    if (!notaFile || !respaldoFile) {
+      showToast("Debe subir ambos documentos", "error");
+      return;
+    }
+
+    // Convertir ambos archivos a base64
+    Promise.all([
+      convertirArchivoABase64(notaFile),
+      convertirArchivoABase64(respaldoFile),
+    ]).then(([notaData, respaldoData]) => {
+      const documentacionData = {
+        nota_secretario: {
+          nombre: notaFile.name,
+          tipo: notaFile.type,
+          datos: notaData,
+          tamaño: notaFile.size,
+        },
+        respaldo_institucional: {
+          nombre: respaldoFile.name,
+          tipo: respaldoFile.type,
+          datos: respaldoData,
+          tamaño: respaldoFile.size,
+        },
+      };
+
+      guardarEnLocalStorage({ documentacion: documentacionData });
+      documentacionGuardada = true;
+
+      // Actualizar estado de botones
+      document.getElementById("btnGuardarDocumentacion").disabled = true;
+      document.getElementById("btnSiguienteDocumentacion").disabled = false;
+      document
+        .getElementById("btnSiguienteDocumentacion")
+        .classList.remove("btn-siguiente");
+      document
+        .getElementById("btnSiguienteDocumentacion")
+        .classList.add("btn-aprobar");
+
+      showToast("Documentación guardada correctamente");
+    });
+  }
+
+  function convertirArchivoABase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        // Remover el prefijo data:application/pdf;base64, etc.
+        const base64 = e.target.result.split(",")[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function cargarDocumentosGuardados() {
+    const datosGuardados = cargarDesdeLocalStorage();
+    if (datosGuardados.documentacion) {
+      documentacionGuardada = true;
+      document.getElementById("btnSiguienteDocumentacion").disabled = false;
+      document
+        .getElementById("btnSiguienteDocumentacion")
+        .classList.remove("btn-siguiente");
+      document
+        .getElementById("btnSiguienteDocumentacion")
+        .classList.add("btn-aprobar");
+
+      // Mostrar nombres de archivos cargados
+      const doc = datosGuardados.documentacion;
+      if (doc.nota_secretario) {
+        document.getElementById("nota_secretario").disabled = true;
+        document.getElementById("previewNota").style.display = "block";
+        document.getElementById("nombreNota").textContent =
+          doc.nota_secretario.nombre;
+        document.getElementById("linkNota").href = "#";
+        document.getElementById("linkNota").onclick = function () {
+          // Podrías implementar descarga del base64 si es necesario
+          return false;
+        };
+      }
+
+      if (doc.respaldo_institucional) {
+        document.getElementById("respaldo_institucional").disabled = true;
+        document.getElementById("previewRespaldo").style.display = "block";
+        document.getElementById("nombreRespaldo").textContent =
+          doc.respaldo_institucional.nombre;
+        document.getElementById("linkRespaldo").href = "#";
+        document.getElementById("linkRespaldo").onclick = function () {
+          return false;
+        };
+      }
+    }
+  }
+
+  function siguientePaso() {
+    if (documentacionGuardada) {
+      window.location.href =
+        "{% url 'escuelas:registro_wizard' 'disciplinas' %}";
+    } else {
+      showToast("Debe guardar la documentación antes de continuar", "error");
+    }
+  }
 </script>
+
+<style>
+  .document-preview {
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+  }
+
+  .document-preview a:hover {
+    text-decoration: underline;
+  }
+</style>
 {% endblock %}

@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "apps.escuelas",
     "apps.secretarias",
     "apps.accounts.apps.AccountsConfig",
+    "storages",
 ]
 
 MIDDLEWARE = [
@@ -150,25 +151,56 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
-# Backblaze B2 Configuration
-AWS_ACCESS_KEY_ID = os.getenv('B2_ACCESS_KEY')
-AWS_SECRET_ACCESS_KEY = os.getenv('B2_SECRET_KEY')
-AWS_STORAGE_BUCKET_NAME = os.getenv('B2_BUCKET_NAME')
-AWS_S3_ENDPOINT_URL = os.getenv('B2_ENDPOINT')
-
-# Configuración adicional importante
-AWS_S3_FILE_OVERWRITE = False
-AWS_DEFAULT_ACL = 'private'  # Archivos privados por defecto
-AWS_QUERYSTRING_AUTH = True  # URLs con expiración para seguridad
-AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400',
-}
-
-# Storage configuration
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-
-# Para desarrollo local (opcional)
+'''
 if os.getenv('DJANGO_DEBUG', 'True') == 'True':
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+'''
+    
+# Cloudflare R2 Configuration
+AWS_ACCESS_KEY_ID = os.getenv('R2_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('R2_SECRET_ACCESS_KEY') 
+AWS_STORAGE_BUCKET_NAME = os.getenv('R2_BUCKET_NAME', 'redepse-documentos')
+AWS_S3_ENDPOINT_URL = os.getenv('R2_ENDPOINT_URL')
+
+# Configuración específica para Cloudflare R2
+AWS_S3_REGION_NAME = 'auto'  # ✅ Importante: 'auto' para R2
+AWS_S3_ADDRESSING_STYLE = 'virtual'
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+
+# Configuración adicional
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = 'private'
+AWS_QUERYSTRING_AUTH = True
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+
+# Verificar configuración completa
+r2_configured = all([
+    AWS_ACCESS_KEY_ID,
+    AWS_SECRET_ACCESS_KEY, 
+    AWS_STORAGE_BUCKET_NAME,
+    AWS_S3_ENDPOINT_URL
+])
+
+if r2_configured:
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    print("✅ Cloudflare R2 configurado correctamente")
+    
+    # Debug info
+    print(f"   Bucket: {AWS_STORAGE_BUCKET_NAME}")
+    print(f"   Endpoint: {AWS_S3_ENDPOINT_URL}")
+    print(f"   Region: {AWS_S3_REGION_NAME}")
+else:
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    print("⚠️  Usando almacenamiento local")
+    missing = []
+    if not AWS_ACCESS_KEY_ID: missing.append('R2_ACCESS_KEY_ID')
+    if not AWS_SECRET_ACCESS_KEY: missing.append('R2_SECRET_ACCESS_KEY')
+    if not AWS_STORAGE_BUCKET_NAME: missing.append('R2_BUCKET_NAME')
+    if not AWS_S3_ENDPOINT_URL: missing.append('R2_ENDPOINT_URL')
+    print(f"   Faltan: {', '.join(missing)}")
