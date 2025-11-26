@@ -14,6 +14,7 @@ import base64
 from django.core.files.base import ContentFile
 from django.utils import timezone
 from storages.backends.s3boto3 import S3Boto3Storage
+from django.core.files.storage import FileSystemStorage
 
 
 @method_decorator(login_required, name='dispatch')
@@ -92,6 +93,14 @@ def guardar_paso(request, paso):
 def finalizar_registro(request):
     if request.method == 'POST':
         try:
+            # === DEBUG: VER SI LLEGAN LOS ARCHIVOS ===
+            print("--- INICIO DEBUG FINALIZAR REGISTRO ---")
+            print(f"FILES recibidos: {request.FILES.keys()}")
+            if 'nota_secretario' in request.FILES:
+                print(f"Nota: {request.FILES['nota_secretario'].name} - Size: {request.FILES['nota_secretario'].size}")
+            else:
+                print("⚠️ NO LLEGÓ nota_secretario en request.FILES")
+            
             # Obtener datos del FormData
             datos_json = request.POST.get('datos_json')
             if not datos_json:
@@ -114,24 +123,43 @@ def finalizar_registro(request):
                     estado='pendiente'
                 )
 
-                # 2. ✅ GUARDAR ARCHIVOS REALES desde FormData
+                # === ACÁ ESTÁ EL CAMBIO CLAVE ===
+                # Configuramos R2 manualmente para forzarlo, igual que en el test
+                r2_storage = S3Boto3Storage(
+                    access_key=os.getenv('R2_ACCESS_KEY_ID'),
+                    secret_key=os.getenv('R2_SECRET_ACCESS_KEY'),
+                    bucket_name=os.getenv('R2_BUCKET_NAME'),
+                    endpoint_url=os.getenv('R2_ENDPOINT_URL'),
+                    region_name='auto',
+                    default_acl='private',
+                    signature_version='s3v4'
+                )
+
+                # 2. GUARDAR ARCHIVOS REALES FORZANDO EL STORAGE
                 if 'nota_secretario' in request.FILES:
                     nota_file = request.FILES['nota_secretario']
-                    Documento.objects.create(
+                    
+                    # Creamos la instancia SIN guardar el archivo todavía
+                    doc_nota = Documento(
                         id_esc=escuela,
-                        documento=nota_file,  # ✅ Django sube automáticamente a Backblaze/Cloudflare
                         tipo='nota_secretario'
                     )
-                    print(f"✅ Nota secretario subida: {nota_file.name}")
+                    # Le inyectamos el storage de R2 al campo
+                    doc_nota.documento.storage = r2_storage
+                    # Guardamos el archivo manualmente en ese campo
+                    doc_nota.documento.save(nota_file.name, nota_file)
+                    print(f"✅ Nota secretario subida a R2: {doc_nota.documento.url}")
                 
                 if 'respaldo_institucional' in request.FILES:
                     respaldo_file = request.FILES['respaldo_institucional']
-                    Documento.objects.create(
+                    
+                    doc_respaldo = Documento(
                         id_esc=escuela,
-                        documento=respaldo_file,  # ✅ Django sube automáticamente
                         tipo='respaldo_institucional'
                     )
-                    print(f"✅ Respaldo institucional subido: {respaldo_file.name}")
+                    doc_respaldo.documento.storage = r2_storage
+                    doc_respaldo.documento.save(respaldo_file.name, respaldo_file)
+                    print(f"✅ Respaldo subido a R2: {doc_respaldo.documento.url}")
 
                 # 3. Guardar responsable
                 if escuela_data.get('dni_resp'):
