@@ -161,7 +161,7 @@ if os.getenv('DJANGO_DEBUG', 'True') == 'True':
 # Cloudflare R2 Configuration
 AWS_ACCESS_KEY_ID = os.getenv('R2_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('R2_SECRET_ACCESS_KEY') 
-AWS_STORAGE_BUCKET_NAME = os.getenv('R2_BUCKET_NAME', 'redepse-documentos')
+AWS_STORAGE_BUCKET_NAME = os.getenv('R2_BUCKET_NAME')
 AWS_S3_ENDPOINT_URL = os.getenv('R2_ENDPOINT_URL')
 
 # Configuración específica para Cloudflare R2
@@ -177,6 +177,9 @@ AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
 }
 
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+'''
 # Verificar configuración completa
 r2_configured = all([
     AWS_ACCESS_KEY_ID,
@@ -204,3 +207,4 @@ else:
     if not AWS_STORAGE_BUCKET_NAME: missing.append('R2_BUCKET_NAME')
     if not AWS_S3_ENDPOINT_URL: missing.append('R2_ENDPOINT_URL')
     print(f"   Faltan: {', '.join(missing)}")
+'''
