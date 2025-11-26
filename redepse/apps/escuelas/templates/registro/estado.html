@@ -1,75 +1,173 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Estado de Solicitud - REDEPSE</title>
-    <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}">
-</head>
-<body>
+    <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}" />
+    <style>
+      .solicitud-summary {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+        border-left: 4px solid #0066ff;
+      }
+      .summary-item {
+        margin: 10px 0;
+        padding: 8px;
+        background: white;
+        border-radius: 5px;
+      }
+      .summary-section {
+        margin: 15px 0;
+        padding: 15px;
+        background: white;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+      }
+      .status-header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .success-message {
+        background: #d4edda;
+        color: #155724;
+        padding: 15px;
+        border-radius: 5px;
+        border: 1px solid #c3e6cb;
+      }
+      .info-box {
+        background: #e7f3ff;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 20px 0;
+        border-left: 4px solid #0066ff;
+      }
+    </style>
+  </head>
+  <body>
     <div class="auth-container">
-        <img src="{% static 'accounts/img/LOGO_REDEPSE.png' %}" alt="Logo REDEPSE">
-        
-        <!-- Mensaje principal -->
-        <div class="status-header">
-            <h1>✅ Solicitud Enviada</h1>
-            <div class="status-message success-message">
-                <p><strong>¡Listo! Su solicitud fue enviada correctamente.</strong></p>
-                <p>Está pendiente de revisión por nuestro equipo.</p>
-            </div>
+      <img
+        src="{% static 'accounts/img/LOGO_REDEPSE.png' %}"
+        alt="Logo REDEPSE"
+      />
+
+      <!-- Mensaje principal -->
+      <div class="status-header">
+        <h1>✅ Solicitud Enviada</h1>
+        <div class="status-message success-message">
+          <p>
+            <strong>¡Listo! Su solicitud fue enviada correctamente.</strong>
+          </p>
+          <p>Está pendiente de revisión por nuestro equipo.</p>
+        </div>
+      </div>
+
+      <!-- Información importante -->
+      <div class="info-box">
+        <h3>📧 Revise su correo electrónico</h3>
+        <p>
+          Hemos enviado un comprobante a su casilla de correo. Si no lo recibe
+          en las próximas <strong>24 horas</strong>, contacte a la Secretaría:
+        </p>
+        <ul>
+          <li>📞 Teléfono: [Número de contacto]</li>
+          <li>✉️ Email: [email de contacto]</li>
+        </ul>
+      </div>
+
+      <!-- Resumen de la solicitud -->
+      {% if escuela %}
+      <div class="solicitud-summary">
+        <h3>📋 Resumen de su solicitud</h3>
+
+        <div class="summary-item">
+          <strong>Escuela:</strong> {{ escuela.nombre_esc }}
         </div>
 
-        <!-- Información importante -->
-        <div class="info-box">
-            <h3>📧 Revise su correo electrónico</h3>
-            <p>Hemos enviado un comprobante a su casilla de correo. Si no lo recibe en las próximas <strong>24 horas</strong>, contacte a la Secretaría:</p>
-            <ul>
-                <li>📞 Teléfono: [Número de contacto]</li>
-                <li>✉️ Email: [email de contacto]</li>
-            </ul>
+        <div class="summary-item">
+          <strong>Localidad:</strong> {{ escuela.localidad }}
         </div>
 
-        <!-- Resumen de la solicitud -->
-        {% if escuela %}
-        <div class="solicitud-summary">
-            <h3>📋 Resumen de su solicitud</h3>
-            <div class="summary-item">
-                <strong>Escuela:</strong> {{ escuela.nombre }}
-            </div>
-            <div class="summary-item">
-                <strong>Fecha de envío:</strong> {{ escuela.solicitud_enviada|date:"d/m/Y H:i" }}
-            </div>
-            
-            <div class="summary-section">
-                <h4>👨‍🏫 Entrenadores registrados:</h4>
-                <ul>
-                    {% for ent in escuela.entrenador_set.all %}
-                        <li>{{ ent.nombre }} {{ ent.apellido }}</li>
-                    {% empty %}
-                        <li>No hay entrenadores agregados</li>
-                    {% endfor %}
-                </ul>
-            </div>
+        <div class="summary-item">
+          <strong>Dirección:</strong> {{ escuela.direccion }}
+        </div>
 
-            <div class="summary-section">
-                <h4>👥 Alumnos registrados:</h4>
-                <ul>
-                    {% for alum in escuela.alumno_set.all %}
-                        <li>{{ alum.nombre }} {{ alum.apellido }}</li>
-                    {% empty %}
-                        <li>No hay alumnos agregados</li>
-                    {% endfor %}
-                </ul>
-            </div>
+        <div class="summary-item">
+          <strong>Email:</strong> {{ escuela.email }}
+        </div>
+
+        <div class="summary-item">
+          <strong>Teléfono:</strong> {{ escuela.telefono1 }}
+        </div>
+
+        {% if solicitud %}
+        <div class="summary-item">
+          <strong>Estado de solicitud:</strong>
+          {% if solicitud.estado == 'Aprobada' %}
+          <span style="color: green; font-weight: bold"
+            >✅ {{ solicitud.estado }}</span
+          >
+          {% elif solicitud.estado == 'Pendiente' %}
+          <span style="color: orange; font-weight: bold"
+            >⏳ {{ solicitud.estado }}</span
+          >
+          {% else %}
+          <span style="color: red; font-weight: bold"
+            >❌ {{ solicitud.estado }}</span
+          >
+          {% endif %}
         </div>
         {% endif %}
 
-        <!-- Botones de acción -->
-        <div class="action-buttons">
-            <a href="{% url 'home' %}" class="btn-primary">🏠 Volver al Inicio</a>
-            <a href="{% url 'accounts:logout' %}" class="btn-secondary">🚪 Cerrar Sesión</a>
+        <div class="summary-section">
+          <h4>👨‍🏫 Entrenadores registrados ({{ entrenadores.count }}):</h4>
+          <ul>
+            {% for ent in entrenadores %}
+            <li>
+              {{ ent.nombre }} {{ ent.apellido }} - DNI: {{ ent.dni_ent }}
+            </li>
+            {% empty %}
+            <li>No hay entrenadores registrados</li>
+            {% endfor %}
+          </ul>
         </div>
+
+        <div class="summary-section">
+          <h4>👥 Alumnos registrados ({{ alumnos.count }}):</h4>
+          <ul>
+            {% for alum in alumnos %}
+            <li>
+              {{ alum.nombre }} {{ alum.apellido }} - DNI: {{ alum.dni_alumno }}
+            </li>
+            {% empty %}
+            <li>No hay alumnos registrados</li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div class="summary-section">
+          <h4>📅 Información de registro:</h4>
+          <div class="summary-item">
+            <strong>Fecha de envío:</strong> {{
+            escuela.fecha_creacion|date:"d/m/Y H:i"|default:"No disponible" }}
+          </div>
+          <div class="summary-item">
+            <strong>ID de solicitud:</strong> {{ escuela.id_esc }}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Botones de acción -->
+      <div class="action-buttons">
+        <a href="{% url 'home' %}" class="btn-primary">🏠 Volver al Inicio</a>
+        <a href="{% url 'accounts:logout' %}" class="btn-secondary"
+          >🚪 Cerrar Sesión</a
+        >
+      </div>
     </div>
-</body>
+  </body>
 </html>

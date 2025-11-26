@@ -28,3 +28,6 @@ Thumbs.db
 
 # Ignorar el archivo de credenciales
 .env
+*.env
+
+*.prettierignore

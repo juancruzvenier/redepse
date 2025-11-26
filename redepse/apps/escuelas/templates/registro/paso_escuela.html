@@ -1,134 +1,364 @@
-{% extends "registro/wizard_base.html" %}
-{% load static %}
-
+{% extends "registro/wizard_base.html" %} {% load static %}
 {% block paso_content %}
 <form id="formEscuela" class="form-registro">
-    {% csrf_token %}
+  {% csrf_token %}
 
-    <div class="form-grid">
-        <div class="form-field">
-            <label for="nombre_esc">Nombre de la escuela *</label>
-            <input type="text" id="nombre_esc" name="nombre_esc" class="form-control" required
-                placeholder="Ej: Escuela Deportiva Central">
-        </div>
+  <h3 style="margin-bottom: 20px">Datos de la Escuela</h3>
 
-        <div class="form-field">
-            <label for="localidad">Localidad *</label>
-            <select id="localidad" name="localidad" class="form-control" required>
-                <option value="">Seleccione una localidad</option>
-                <option value="Santiago del Estero">Santiago del Estero (Capital)</option>
-                <option value="La Banda">La Banda</option>
-                <option value="Frías">Frías</option>
-                <option value="Añatuya">Añatuya</option>
-                <option value="Quimilí">Quimilí</option>
-                <option value="Loreto">Loreto</option>
-                <option value="Clodomira">Clodomira</option>
-                <option value="Termas de Río Hondo">Termas de Río Hondo</option>
-                <option value="Monte Quemado">Monte Quemado</option>
-                <option value="Sumampa">Sumampa</option>
-                <option value="Fernández">Fernández</option>
-                <option value="Selva">Selva</option>
-                <option value="Icaño">Icaño</option>
-                <option value="Pinto">Pinto</option>
-                <option value="Villa Atamisqui">Villa Atamisqui</option>
-                <option value="Bandera">Bandera</option>
-                <option value="Los Telares">Los Telares</option>
-                <option value="Villa Ojo de Agua">Villa Ojo de Agua</option>
-                <option value="Suncho Corral">Suncho Corral</option>
-            </select>
-        </div>
-
-        <div class="form-field">
-            <label for="direccion">Dirección de la escuela *</label>
-            <input type="text" id="direccion" name="direccion" class="form-control" required
-                placeholder="Ej: Av. Central 123">
-        </div>
-
-        <div class="form-field">
-            <label for="email">Correo electrónico *</label>
-            <input type="email" id="email" name="email" class="form-control" required placeholder="ejemplo@escuela.com">
-        </div>
-
-        <div class="form-field">
-            <label for="telefono1">Teléfono de contacto *</label>
-            <input type="tel" id="telefono1" name="telefono1" class="form-control" required placeholder="Ej: 3854123456"
-                pattern="[0-9]+" title="Solo se permiten números">
-        </div>
+  <div class="form-grid">
+    <div class="form-field">
+      <label for="nombre_esc">Nombre de la escuela *</label>
+      <input
+        type="text"
+        id="nombre_esc"
+        name="nombre_esc"
+        class="form-control"
+        required
+        placeholder="Ej: Escuela Deportiva Central"
+      />
     </div>
 
-    <div class="form-actions">
-        <button type="button" id="btnGuardarEscuela" class="btn-guardar" onclick="guardarEscuela()">
-            Guardar
-        </button>
-        <button type="button" id="btnSiguienteEscuela" class="btn-siguiente" onclick="siguientePaso()" disabled>
-            Siguiente →
-        </button>
-        
-        
+    <div class="form-field">
+      <label for="departamento">Departamento *</label>
+      <select
+        id="departamento"
+        name="departamento"
+        class="form-control"
+        required
+      >
+        <option value="">Seleccione un departamento</option>
+        <option value="Aguirre">Aguirre</option>
+        <option value="Alberdi">Alberdi</option>
+        <option value="Atamisqui">Atamisqui</option>
+        <option value="Avellaneda">Avellaneda</option>
+        <option value="Banda">Banda</option>
+        <option value="Belgrano">Belgrano</option>
+        <option value="Capital">Capital</option>
+        <option value="Choya">Choya</option>
+        <option value="Copo">Copo</option>
+        <option value="Figueroa">Figueroa</option>
+        <option value="General Taboada">General Taboada</option>
+        <option value="Guasayán">Guasayán</option>
+        <option value="Jiménez">Jiménez</option>
+        <option value="Juan Felipe Ibarra">Juan Felipe Ibarra</option>
+        <option value="Loreto">Loreto</option>
+        <option value="Mitre">Mitre</option>
+        <option value="Moreno">Moreno</option>
+        <option value="Ojo de Agua">Ojo de Agua</option>
+        <option value="Pellegrini">Pellegrini</option>
+        <option value="Quebrachos">Quebrachos</option>
+        <option value="Río Hondo">Río Hondo</option>
+        <option value="Rivadavia">Rivadavia</option>
+        <option value="Robles">Robles</option>
+        <option value="Salavina">Salavina</option>
+        <option value="San Martín">San Martín</option>
+        <option value="Sarmiento">Sarmiento</option>
+        <option value="Silípica">Silípica</option>
+      </select>
     </div>
+
+    <div class="form-field">
+      <label for="localidad">Localidad *</label>
+      <select
+        id="localidad"
+        name="localidad"
+        class="form-control"
+        required
+        disabled
+      >
+        <option value="">Primero seleccione un departamento</option>
+      </select>
+    </div>
+
+    <div class="form-field">
+      <label for="direccion">Dirección de la escuela *</label>
+      <input
+        type="text"
+        id="direccion"
+        name="direccion"
+        class="form-control"
+        required
+        placeholder="Ej: Av. Central 123"
+      />
+    </div>
+
+    <div class="form-field">
+      <label for="email">Correo electrónico *</label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        class="form-control"
+        required
+        placeholder="ejemplo@escuela.com"
+      />
+    </div>
+
+    <div class="form-field">
+      <label for="telefono1">Teléfono de contacto *</label>
+      <input
+        type="tel"
+        id="telefono1"
+        name="telefono1"
+        class="form-control"
+        required
+        placeholder="Ej: 3854123456"
+        pattern="[0-9]+"
+        title="Solo se permiten números"
+      />
+    </div>
+  </div>
+
+  <hr style="margin: 30px 0; border: 1px solid #ddd" />
+
+  <h3 style="margin-bottom: 20px">Datos del Responsable</h3>
+
+  <div class="form-grid">
+    <div class="form-field">
+      <label for="dni_resp">DNI del responsable *</label>
+      <input
+        type="number"
+        id="dni_resp"
+        name="dni_resp"
+        class="form-control"
+        required
+        placeholder="Ej: 30123456"
+        min="1000000"
+        max="99999999"
+      />
+    </div>
+
+    <div class="form-field">
+      <label for="resp_nombre">Nombre del responsable *</label>
+      <input
+        type="text"
+        id="resp_nombre"
+        name="resp_nombre"
+        class="form-control"
+        required
+        placeholder="Ej: Juan"
+      />
+    </div>
+
+    <div class="form-field">
+      <label for="resp_apellido">Apellido del responsable *</label>
+      <input
+        type="text"
+        id="resp_apellido"
+        name="resp_apellido"
+        class="form-control"
+        required
+        placeholder="Ej: Pérez"
+      />
+    </div>
+
+    <div class="form-field">
+      <label for="resp_email">Correo electrónico del responsable *</label>
+      <input
+        type="email"
+        id="resp_email"
+        name="resp_email"
+        class="form-control"
+        required
+        placeholder="ejemplo@email.com"
+      />
+    </div>
+
+    <div class="form-field">
+      <label for="resp_telefono1">Teléfono del responsable *</label>
+      <input
+        type="tel"
+        id="resp_telefono1"
+        name="resp_telefono1"
+        class="form-control"
+        required
+        placeholder="Ej: 3854123456"
+        pattern="[0-9]+"
+      />
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button
+      type="button"
+      id="btnGuardarEscuela"
+      class="btn-guardar"
+      onclick="guardarEscuela()"
+    >
+      Guardar
+    </button>
+    <button
+      type="button"
+      id="btnSiguienteEscuela"
+      class="btn-siguiente"
+      onclick="siguientePaso()"
+      disabled
+    >
+      Siguiente →
+    </button>
+  </div>
 </form>
-
-<a class="logout-mobile" href="{% url 'accounts:logout' %}">Cerrar sesión</a>
-
-{% endblock %}
-
-{% block extra_scripts %}
+{% endblock %} {% block extra_scripts %}
 <script>
-    let escuelaGuardada = false;
+  let escuelaGuardada = false;
 
-    function guardarEscuela() {
-        const form = document.getElementById('formEscuela');
-        const formData = new FormData(form);
+  // Mapeo de departamentos a localidades
+  const localidadesPorDepartamento = {
+    Capital: [
+      "Santiago del Estero",
+      "El Zanjón",
+      "La Banda",
+      "Los Telares",
+      "Clodomira",
+    ],
+    Banda: [
+      "La Banda",
+      "Los Pirpintos",
+      "Villa Atamisqui",
+      "Villa General Mitre",
+    ],
+    Figueroa: ["La Cañada", "Laprida", "Pozo Hondo", "Villa Figueroa"],
+    Moreno: ["Quimilí", "Los Juríes", "Pampa de los Guanacos", "Tintina"],
+    "Juan Felipe Ibarra": ["Suncho Corral", "Villa Unión"],
+    Copo: ["Monte Quemado", "Los Tigres", "Pampa de los Guanacos"],
+    Pellegrini: ["Nueva Esperanza", "Los Telares"],
+    Jiménez: ["Pozo Hondo", "El Charco"],
+    "General Taboada": ["Añatuya", "Los Telares"],
+    Guasayán: ["San Pedro", "Guasayán"],
+    "Río Hondo": ["Termas de Río Hondo", "Villa Río Hondo"],
+    Robles: ["Fernández", "Ingeniero Forres"],
+    Aguirre: ["Pinto", "Brea Pozo"],
+    Alberdi: ["Campo Gallo", "El Caburé"],
+    Atamisqui: ["Villa Atamisqui", "Ancaján"],
+    Avellaneda: ["Herrera", "Isca Yacú"],
+    Belgrano: ["Bandera", "Fortín Inca"],
+    Choya: ["Frías", "Lugones"],
+    Loreto: ["Loreto", "Chilca Juliana"],
+    Mitre: ["Villa Unión", "Sol de Julio"],
+    "Ojo de Agua": ["Villa Ojo de Agua", "Sumampa"],
+    Quebrachos: ["Sumampa", "Lavalle"],
+    Rivadavia: ["Selva", "Malbrán"],
+    Salavina: ["Los Telares", "Villa Salavina"],
+    "San Martín": ["Brea Pozo", "El Bobadal"],
+    Sarmiento: ["Garza", "Sachayoj"],
+    Silípica: ["Arraga", "Villa Silípica"],
+  };
 
-        // Validar campos
-        if (!validarCamposRequeridos('formEscuela')) {
-            showToast('Complete todos los campos requeridos', 'error');
-            return;
-        }
+  function configurarDepartamentos() {
+    const selectDepartamento = document.getElementById("departamento");
+    const selectLocalidad = document.getElementById("localidad");
 
-        // Guardar en localStorage
-        const datosEscuela = {};
-        for (let [key, value] of formData.entries()) {
-            datosEscuela[key] = value;
-        }
+    selectDepartamento.addEventListener("change", function () {
+      const departamento = this.value;
+      selectLocalidad.innerHTML =
+        '<option value="">Seleccione una localidad</option>';
 
-        guardarEnLocalStorage({ escuela: datosEscuela });
-        escuelaGuardada = true;
-
-        // Actualizar estado de botones
-        document.getElementById('btnGuardarEscuela').disabled = true;
-        document.getElementById('btnSiguienteEscuela').disabled = false;
-        document.getElementById('btnSiguienteEscuela').classList.remove('btn-siguiente');
-        document.getElementById('btnSiguienteEscuela').classList.add('btn-aprobar');
-
-        showToast('Datos de escuela guardados correctamente');
-    }
-
-    function siguientePaso() {
-        if (escuelaGuardada) {
-            window.location.href = "{% url 'escuelas:registro_wizard' 'documentacion' %}";
-        } else {
-            showToast('Debe guardar los datos antes de continuar', 'error');
-        }
-    }
-
-    // Inicializar
-    document.addEventListener('DOMContentLoaded', function () {
-        const datosGuardados = cargarDesdeLocalStorage();
-        if (datosGuardados.escuela) {
-            // Prellenar formulario
-            const escuelaData = datosGuardados.escuela;
-            for (const [key, value] of Object.entries(escuelaData)) {
-                const field = document.querySelector(`[name="${key}"]`);
-                if (field) field.value = value;
-            }
-            escuelaGuardada = true;
-            document.getElementById('btnSiguienteEscuela').disabled = false;
-            document.getElementById('btnSiguienteEscuela').classList.remove('btn-siguiente');
-            document.getElementById('btnSiguienteEscuela').classList.add('btn-aprobar');
-        }
-
-        configurarDeteccionCambios('formEscuela', 'btnGuardarEscuela');
+      if (departamento && localidadesPorDepartamento[departamento]) {
+        selectLocalidad.disabled = false;
+        localidadesPorDepartamento[departamento].forEach((localidad) => {
+          const option = document.createElement("option");
+          option.value = localidad;
+          option.textContent = localidad;
+          selectLocalidad.appendChild(option);
+        });
+      } else {
+        selectLocalidad.disabled = true;
+      }
     });
+  }
+
+  function guardarEscuela() {
+    const form = document.getElementById("formEscuela");
+    const formData = new FormData(form);
+
+    // Validar campos requeridos
+    if (!validarCamposRequeridos("formEscuela")) {
+      showToast("Complete todos los campos requeridos", "error");
+      return;
+    }
+
+    // Validar que se seleccionó departamento y localidad
+    const departamento = document.getElementById("departamento").value;
+    const localidad = document.getElementById("localidad").value;
+
+    if (!departamento || !localidad) {
+      showToast("Seleccione departamento y localidad", "error");
+      return;
+    }
+
+    // Guardar en localStorage
+    const datosEscuela = {};
+    for (let [key, value] of formData.entries()) {
+      datosEscuela[key] = value;
+    }
+
+    guardarEnLocalStorage({
+      escuela: datosEscuela,
+      departamento: departamento,
+      localidad: localidad,
+    });
+    escuelaGuardada = true;
+
+    // Actualizar estado de botones
+    document.getElementById("btnGuardarEscuela").disabled = true;
+    document.getElementById("btnSiguienteEscuela").disabled = false;
+    document
+      .getElementById("btnSiguienteEscuela")
+      .classList.remove("btn-siguiente");
+    document.getElementById("btnSiguienteEscuela").classList.add("btn-aprobar");
+
+    showToast("Datos de escuela guardados correctamente");
+  }
+
+  function siguientePaso() {
+    if (escuelaGuardada) {
+      window.location.href =
+        "{% url 'escuelas:registro_wizard' 'documentacion' %}";
+    } else {
+      showToast("Debe guardar los datos antes de continuar", "error");
+    }
+  }
+
+  // Inicializar
+  document.addEventListener("DOMContentLoaded", function () {
+    configurarDepartamentos();
+
+    const datosGuardados = cargarDesdeLocalStorage();
+    if (datosGuardados.escuela) {
+      // Prellenar formulario
+      const escuelaData = datosGuardados.escuela;
+      for (const [key, value] of Object.entries(escuelaData)) {
+        const field = document.querySelector(`[name="${key}"]`);
+        if (field) field.value = value;
+      }
+
+      // Prellenar departamento y localidad si existen
+      if (datosGuardados.departamento) {
+        document.getElementById("departamento").value =
+          datosGuardados.departamento;
+        document
+          .getElementById("departamento")
+          .dispatchEvent(new Event("change"));
+
+        if (datosGuardados.localidad) {
+          setTimeout(() => {
+            document.getElementById("localidad").value =
+              datosGuardados.localidad;
+          }, 100);
+        }
+      }
+
+      escuelaGuardada = true;
+      document.getElementById("btnSiguienteEscuela").disabled = false;
+      document
+        .getElementById("btnSiguienteEscuela")
+        .classList.remove("btn-siguiente");
+      document
+        .getElementById("btnSiguienteEscuela")
+        .classList.add("btn-aprobar");
+    }
+
+    configurarDeteccionCambios("formEscuela", "btnGuardarEscuela");
+  });
 </script>
 {% endblock %}

@@ -2,10 +2,15 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Documento(models.Model):
+    TIPOS_DOCUMENTO = [
+        ('nota_secretario', 'Nota al Secretario'),
+        ('respaldo_institucional', 'Respaldo Institucional'),
+    ]
+    
     id_documento = models.AutoField(primary_key=True)
     id_esc = models.ForeignKey('Escuela', models.DO_NOTHING, db_column='id_esc')
     documento = models.FileField(upload_to='documentos/%Y/%m/%d/')
-    tipo = models.CharField(max_length=50, default='nota_secretario')
+    tipo = models.CharField(max_length=50, choices=TIPOS_DOCUMENTO)
     fecha_subida = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -108,6 +113,7 @@ class Escuela(models.Model):
     estado = models.CharField(max_length=20, blank=True, null=True)
     solicitud_enviada = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    dni_resp = models.ForeignKey('Responsable', models.DO_NOTHING, db_column='dni_resp', null=True, blank=True)
 
     class Meta:
         db_table = 'escuela'

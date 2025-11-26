@@ -117,7 +117,7 @@
             datosGuardados.disciplinas.ids.forEach(id => {
                 const option = document.createElement('option');
                 option.value = id;
-                option.textContent = `Disciplina ${id}`; // Temporal - deberías obtener el nombre real
+                option.textContent = `${disciplina}`; // Temporal - deberías obtener el nombre real
                 selectDisciplina.appendChild(option);
             });
         }
