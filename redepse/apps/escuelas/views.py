@@ -93,6 +93,20 @@ def guardar_paso(request, paso):
 def finalizar_registro(request):
     if request.method == 'POST':
         try:
+            # === BLOQUE DE DIAGNÓSTICO (Borrar luego de arreglar) ===
+            r2_key = os.getenv('R2_ACCESS_KEY_ID')
+            r2_secret = os.getenv('R2_SECRET_ACCESS_KEY')
+            
+            if not r2_key or not r2_secret:
+                print("❌ ERROR CRÍTICO: Variables de entorno R2 son None en el servidor")
+                return JsonResponse({'success': False, 'error': 'Error de configuración en servidor: Faltan credenciales R2'}, status=500)
+
+            datos_json = request.POST.get('datos_json')
+            if not datos_json:
+                 print("❌ ERROR: datos_json llegó vacío o None")
+                 return JsonResponse({'success': False, 'error': 'No llegaron datos del formulario'}, status=400)
+            # ========================================================
+            
             # === DEBUG: VER SI LLEGAN LOS ARCHIVOS ===
             print("--- INICIO DEBUG FINALIZAR REGISTRO ---")
             print(f"FILES recibidos: {request.FILES.keys()}")
