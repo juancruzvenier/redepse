@@ -245,16 +245,16 @@ body {
     font-weight: bold;
   }
   
-  /* ===== Habilitaciones ===== */
-  .habilitaciones p strong {
+  /* ===== Documentacion ===== */
+  .documentacion p strong {
     color: #007bff;
   }
   
-  .habilitaciones p {
+  .documentacion p {
     font-size: 0.95rem;
   }
   
-  .habilitaciones p:last-child {
+  .documentacion p:last-child {
     font-weight: bold;
     color: #28a745;
   }

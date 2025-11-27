@@ -62,9 +62,9 @@
             </div>
             <div
               class="card"
-              onclick="marcarActiva(this); mostrarHabilitaciones()"
+              onclick="marcarActiva(this); mostrarDocumentacion()"
             >
-              Habilitaciones
+              Documentacion
             </div>
             <div
               class="card"
@@ -163,32 +163,36 @@
           info.style.display = "block";
         }
 
-        function mostrarHabilitaciones() {
-          const solicitud = {
-            id: "{{ solicitud.id_solicitud|default:'-' }}",
-            estado: "{{ solicitud.estado|default:'Sin solicitud registrada' }}"
-          };
+        function mostrarDocumentacion() {
+    const documentos = [
+      {% for doc in documentos %}
+        {
+          tipo: "{{ doc.get_tipo_display|default:'Documento' }}",
+          url: "{{ doc.documento.url|default:'' }}",
+          nombre: "{{ doc.documento.name|default:'archivo' }}"
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ];
 
-          let html = `
-            <div class="habilitaciones">
-              <h3>Habilitaciones</h3>
-          `;
+    let html = `<div class="documentacion"><h3>Documentación</h3>`;
 
-          if (solicitud.estado === "Sin solicitud registrada") {
-            html += `<p>No hay solicitudes registradas para esta escuela.</p>`;
-          } else {
-            html += `
-              <p><strong>ID Solicitud:</strong> ${solicitud.id}</p>
-              <p><strong>Estado:</strong> ${solicitud.estado}</p>
-            `;
-          }
+    if (documentos.length === 0) {
+      html += `<p>No hay documentación cargada para esta escuela.</p>`;
+    } else {
+      html += `<ul>`;
+      documentos.forEach(doc => {
+        const nombre = doc.nombre.split('/').pop();
+        html += `<li><strong>${doc.tipo}:</strong> <a href="${doc.url}" target="_blank" rel="noopener noreferrer">${nombre}</a></li>`;
+      });
+      html += `</ul>`;
+    }
 
-          html += `</div>`;
+    html += `</div>`;
 
-          const info = document.getElementById("info-container");
-          info.innerHTML = html;
-          info.style.display = "block";
-        }
+    const info = document.getElementById("info-container");
+    info.innerHTML = html;
+    info.style.display = "block";
+  }
 
         function mostrarAlumnos() {
         const alumnos = [

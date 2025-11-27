@@ -18,7 +18,7 @@ from django.views.decorators.http import require_POST
 from .forms import RegisterForm, LoginForm
 from apps.escuelas.models import (
     Escuela, Entrenador, EntDiscEscPer, Solicitudes,
-    Alumno, Inscripcion, Tutor, Disciplina
+    Alumno, Inscripcion, Tutor, Disciplina , Documento
 )
 
 # ====================================================
@@ -215,6 +215,7 @@ def filtrar_escuelas(request):
 def detalle_escuela(request, id_esc):
     escuela = get_object_or_404(Escuela, id_esc=id_esc)
     origen = request.GET.get('from', 'admin_dashboard')
+    documentos = Documento.objects.filter(id_esc=id_esc).order_by('-fecha_subida')
 
     entrenadores = Entrenador.objects.filter(entdiscescper__id_esc=id_esc).distinct()
     solicitud = Solicitudes.objects.filter(id_esc=id_esc).first()
@@ -233,6 +234,7 @@ def detalle_escuela(request, id_esc):
         'alumnos': alumnos,
         'tutores': tutores,
         'disciplinas': disciplinas,
+        'documentos': documentos,
         'origen': origen
     })
 
