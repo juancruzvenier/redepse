@@ -5,7 +5,7 @@
 
   <div class="form-grid">
     <div class="form-field">
-      <label for="nota_secretario">Nota al secretario Dapello *</label>
+      <label for="nota_secretario">Nota dirigida al Secretario*</label>
       <input
         type="file"
         id="nota_secretario"
@@ -46,7 +46,7 @@
     </div>
 
     <div class="form-field">
-      <label for="respaldo_institucional">Respaldo institucional *</label>
+      <label for="respaldo_institucional">Respaldo/Aval institucional *</label>
       <input
         type="file"
         id="respaldo_institucional"
@@ -99,11 +99,11 @@
     <h4 style="margin-top: 0; color: #0066ff">📋 Documentación Requerida</h4>
     <ul style="margin-bottom: 0">
       <li>
-        <strong>Nota al secretario Dapello:</strong> Solicitud formal de
+        <strong>Nota al Secretario</strong> Solicitud formal de
         habilitación
       </li>
       <li>
-        <strong>Respaldo institucional:</strong> Documentación que acredite la
+        <strong>Respaldo institucional:</strong> Documentación que acredite la existencia de la
         institución
       </li>
     </ul>
@@ -134,31 +134,35 @@
 </form>
 {% endblock %} {% block extra_scripts %}
 <script>
-  let documentacionGuardada = false;
+  let db;
+  const DB_NAME = "RedepseFilesDB";
+  const STORE_NAME = "archivos";
 
-  function anteriorPaso() {
-    window.location.href = "{% url 'escuelas:registro_wizard' 'escuela' %}";
-  }
-
-  // Configurar vista previa para ambos documentos
   document.addEventListener("DOMContentLoaded", function () {
+    // 1. Iniciar IndexedDB
+    const request = indexedDB.open(DB_NAME, 1);
+
+    request.onerror = (event) => console.error("Error DB:", event);
+    
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+
+    request.onsuccess = (event) => {
+      db = event.target.result;
+      // Cargar vista previa si ya existen archivos
+      cargarVistasPreviasExistentes();
+    };
+
+    // Configurar listeners
     const notaInput = document.getElementById("nota_secretario");
     const respaldoInput = document.getElementById("respaldo_institucional");
 
-    // Configurar nota secretario
-    notaInput.addEventListener("change", function (e) {
-      manejarSeleccionArchivo(e, "nota_secretario");
-      verificarDocumentosCompletos();
-    });
-
-    // Configurar respaldo institucional
-    respaldoInput.addEventListener("change", function (e) {
-      manejarSeleccionArchivo(e, "respaldo_institucional");
-      verificarDocumentosCompletos();
-    });
-
-    // Cargar documentos guardados
-    cargarDocumentosGuardados();
+    notaInput.addEventListener("change", (e) => manejarSeleccionArchivo(e, "nota_secretario"));
+    respaldoInput.addEventListener("change", (e) => manejarSeleccionArchivo(e, "respaldo_institucional"));
   });
 
   function manejarSeleccionArchivo(event, tipo) {
@@ -172,163 +176,157 @@
       return;
     }
 
-    // Crear URL temporal para vista previa
+    // 1. Guardar en IndexedDB (Archivo real)
+    guardarEnDB(tipo, file);
+
+    // 2. Guardar Metadatos individuales en LocalStorage (Para persistencia rápida)
+    const metaDataKey = `meta_${tipo}`;
+    const metaInfo = {
+        nombre: file.name,
+        tipo: file.type,
+        size: file.size
+    };
+    localStorage.setItem(metaDataKey, JSON.stringify(metaInfo));
+
+    // 3. Mostrar vista previa (usamos el archivo directo que acaba de subir el usuario)
     const url = URL.createObjectURL(file);
+    actualizarDOMPreview(tipo, file.name, url);
+    
+    verificarEstadoBoton();
+  }
 
-    if (tipo === "nota_secretario") {
-      document.getElementById("previewNota").style.display = "block";
-      document.getElementById("linkNota").href = url;
-      document.getElementById("nombreNota").textContent = file.name;
-    } else {
-      document.getElementById("previewRespaldo").style.display = "block";
-      document.getElementById("linkRespaldo").href = url;
-      document.getElementById("nombreRespaldo").textContent = file.name;
+  function guardarEnDB(key, file) {
+    const transaction = db.transaction([STORE_NAME], "readwrite");
+    const store = transaction.objectStore(STORE_NAME);
+    store.put(file, key);
+  }
+
+  // Función auxiliar para actualizar el HTML de la vista previa
+  function actualizarDOMPreview(tipo, nombre, url) {
+    const sufijo = tipo === "nota_secretario" ? "Nota" : "Respaldo";
+    const previewDiv = document.getElementById(`preview${sufijo}`);
+    const link = document.getElementById(`link${sufijo}`);
+    const nombreSpan = document.getElementById(`nombre${sufijo}`);
+
+    if (previewDiv && link && nombreSpan) {
+        previewDiv.style.display = "block";
+        nombreSpan.textContent = nombre;
+        link.href = url; // Asignamos la URL real (blob)
+        
+        // Limpieza de memoria: si ya había una URL blob anterior, liberarla podría ser buena práctica,
+        // pero para este alcance, dejar que el navegador lo maneje al recargar está bien.
     }
+  }
 
-    // Habilitar botón guardar
-    document.getElementById("btnGuardarDocumentacion").disabled = false;
-    document
-      .getElementById("btnGuardarDocumentacion")
-      .classList.remove("btn-guardar");
-    document
-      .getElementById("btnGuardarDocumentacion")
-      .classList.add("btn-aprobar");
+  // Esta función recupera los archivos de la DB al recargar la página para generar los links
+  function cargarVistasPreviasExistentes() {
+    ['nota_secretario', 'respaldo_institucional'].forEach(tipo => {
+        // Primero verificamos si hay metadatos (nombre)
+        const meta = localStorage.getItem(`meta_${tipo}`);
+        if (meta) {
+            const data = JSON.parse(meta);
+            
+            // Ahora recuperamos el archivo real de la DB para generar el link
+            const transaction = db.transaction([STORE_NAME], "readonly");
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.get(tipo);
+
+            request.onsuccess = () => {
+                const fileBlob = request.result;
+                if (fileBlob) {
+                    const url = URL.createObjectURL(fileBlob);
+                    actualizarDOMPreview(tipo, data.nombre, url);
+                }
+            };
+        }
+    });
+    verificarEstadoBoton();
   }
 
   function eliminarDocumento(tipo) {
-    const input = document.getElementById(tipo);
-    const preview = document.getElementById(
-      "preview" + tipo.charAt(0).toUpperCase() + tipo.slice(1)
-    );
+    // 1. Borrar de IndexedDB
+    const transaction = db.transaction([STORE_NAME], "readwrite");
+    const store = transaction.objectStore(STORE_NAME);
+    store.delete(tipo);
 
-    input.value = "";
-    preview.style.display = "none";
+    // 2. Borrar de LocalStorage
+    localStorage.removeItem(`meta_${tipo}`);
 
-    // Liberar URL temporal
-    if (tipo === "nota_secretario") {
-      URL.revokeObjectURL(document.getElementById("linkNota").href);
-    } else {
-      URL.revokeObjectURL(document.getElementById("linkRespaldo").href);
-    }
-
-    verificarDocumentosCompletos();
+    // 3. Limpiar UI
+    document.getElementById(tipo).value = "";
+    const sufijo = tipo === "nota_secretario" ? "Nota" : "Respaldo";
+    document.getElementById(`preview${sufijo}`).style.display = "none";
+    
+    verificarEstadoBoton();
   }
 
-  function verificarDocumentosCompletos() {
-    const nota = document.getElementById("nota_secretario").files.length;
-    const respaldo = document.getElementById("respaldo_institucional").files
-      .length;
-    const todosCompletos = nota > 0 && respaldo > 0;
+  function verificarEstadoBoton() {
+    const notaOk = localStorage.getItem("meta_nota_secretario");
+    const respaldoOk = localStorage.getItem("meta_respaldo_institucional");
+    
+    const btnGuardar = document.getElementById("btnGuardarDocumentacion");
+    const btnSiguiente = document.getElementById("btnSiguienteDocumentacion");
 
-    return todosCompletos;
+    // Habilitar "Guardar" si hay archivos
+    // En este flujo, como ya se guarda en DB al seleccionar, el botón "Guardar" 
+    // actúa más como una confirmación para pasar al objeto principal.
+    if (notaOk && respaldoOk) {
+        btnGuardar.disabled = false;
+        
+        // Verificamos si ya se hizo clic en guardar antes (si existe en el objeto principal)
+        const datosGlobales = cargarDesdeLocalStorage();
+        if (datosGlobales.documentacion && datosGlobales.documentacion.completado) {
+             btnSiguiente.disabled = false;
+             btnSiguiente.classList.remove("btn-siguiente");
+             btnSiguiente.classList.add("btn-aprobar");
+        }
+    } else {
+        btnGuardar.disabled = true; // Si falta alguno, no se puede guardar
+        btnSiguiente.disabled = true;
+    }
   }
 
   function guardarDocumentacion() {
-    const notaFile = document.getElementById("nota_secretario").files[0];
-    const respaldoFile = document.getElementById("respaldo_institucional")
-      .files[0];
+    const metaNota = localStorage.getItem("meta_nota_secretario");
+    const metaRespaldo = localStorage.getItem("meta_respaldo_institucional");
 
-    if (!notaFile || !respaldoFile) {
+    if (!metaNota || !metaRespaldo) {
       showToast("Debe subir ambos documentos", "error");
       return;
     }
 
-    // Convertir ambos archivos a base64
-    Promise.all([
-      convertirArchivoABase64(notaFile),
-      convertirArchivoABase64(respaldoFile),
-    ]).then(([notaData, respaldoData]) => {
-      const documentacionData = {
-        nota_secretario: {
-          nombre: notaFile.name,
-          tipo: notaFile.type,
-          datos: notaData,
-          tamaño: notaFile.size,
-        },
-        respaldo_institucional: {
-          nombre: respaldoFile.name,
-          tipo: respaldoFile.type,
-          datos: respaldoData,
-          tamaño: respaldoFile.size,
-        },
-      };
+    // AQUÍ ESTABA EL ERROR: Reconstruimos el objeto completo para que el Resumen lo lea
+    const docData = {
+        nota_secretario: JSON.parse(metaNota),
+        respaldo_institucional: JSON.parse(metaRespaldo),
+        completado: true
+    };
 
-      guardarEnLocalStorage({ documentacion: documentacionData });
-      documentacionGuardada = true;
-
-      // Actualizar estado de botones
-      document.getElementById("btnGuardarDocumentacion").disabled = true;
-      document.getElementById("btnSiguienteDocumentacion").disabled = false;
-      document
-        .getElementById("btnSiguienteDocumentacion")
-        .classList.remove("btn-siguiente");
-      document
-        .getElementById("btnSiguienteDocumentacion")
-        .classList.add("btn-aprobar");
-
-      showToast("Documentación guardada correctamente");
-    });
-  }
-
-  function convertirArchivoABase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        // Remover el prefijo data:application/pdf;base64, etc.
-        const base64 = e.target.result.split(",")[1];
-        resolve(base64);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
-
-  function cargarDocumentosGuardados() {
-    const datosGuardados = cargarDesdeLocalStorage();
-    if (datosGuardados.documentacion) {
-      documentacionGuardada = true;
-      document.getElementById("btnSiguienteDocumentacion").disabled = false;
-      document
-        .getElementById("btnSiguienteDocumentacion")
-        .classList.remove("btn-siguiente");
-      document
-        .getElementById("btnSiguienteDocumentacion")
-        .classList.add("btn-aprobar");
-
-      // Mostrar nombres de archivos cargados
-      const doc = datosGuardados.documentacion;
-      if (doc.nota_secretario) {
-        document.getElementById("nota_secretario").disabled = true;
-        document.getElementById("previewNota").style.display = "block";
-        document.getElementById("nombreNota").textContent =
-          doc.nota_secretario.nombre;
-        document.getElementById("linkNota").href = "#";
-        document.getElementById("linkNota").onclick = function () {
-          // Podrías implementar descarga del base64 si es necesario
-          return false;
-        };
-      }
-
-      if (doc.respaldo_institucional) {
-        document.getElementById("respaldo_institucional").disabled = true;
-        document.getElementById("previewRespaldo").style.display = "block";
-        document.getElementById("nombreRespaldo").textContent =
-          doc.respaldo_institucional.nombre;
-        document.getElementById("linkRespaldo").href = "#";
-        document.getElementById("linkRespaldo").onclick = function () {
-          return false;
-        };
-      }
-    }
+    // Guardamos en el objeto principal del wizard
+    guardarEnLocalStorage({ documentacion: docData });
+    
+    showToast("Documentación confirmada correctamente");
+    
+    // Habilitar visualmente el siguiente paso
+    const btnSiguiente = document.getElementById("btnSiguienteDocumentacion");
+    btnSiguiente.disabled = false;
+    btnSiguiente.classList.remove("btn-siguiente");
+    btnSiguiente.classList.add("btn-aprobar");
+    
+    document.getElementById("btnGuardarDocumentacion").disabled = true;
   }
 
   function siguientePaso() {
-    if (documentacionGuardada) {
-      window.location.href =
-        "{% url 'escuelas:registro_wizard' 'disciplinas' %}";
+    const datos = cargarDesdeLocalStorage();
+    if (datos.documentacion && datos.documentacion.completado) {
+      window.location.href = "{% url 'escuelas:registro_wizard' 'disciplinas' %}";
     } else {
       showToast("Debe guardar la documentación antes de continuar", "error");
     }
+  }
+
+  function anteriorPaso() {
+    window.location.href = "{% url 'escuelas:registro_wizard' 'escuela' %}";
   }
 </script>
 

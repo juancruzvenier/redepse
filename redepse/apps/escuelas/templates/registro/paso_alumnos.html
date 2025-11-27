@@ -4,32 +4,29 @@
 {% block paso_content %}
 <form id="formAlumno" class="form-registro">
     {% csrf_token %}
-    
+
     <h3 style="margin-bottom: 20px;">Registrar Alumno</h3>
-    
+
     <div class="form-grid">
         <div class="form-field">
             <label for="dni_alumno">DNI *</label>
-            <input type="number" id="dni_alumno" name="dni_alumno" class="form-control" required 
-                   placeholder="Ej: 45987654" min="1000000" max="99999999">
+            <input type="number" id="dni_alumno" name="dni_alumno" class="form-control" required
+                placeholder="Ej: 45987654" min="1000000" max="99999999">
         </div>
 
         <div class="form-field">
             <label for="nombre">Nombre *</label>
-            <input type="text" id="nombre" name="nombre" class="form-control" required 
-                   placeholder="Ej: Carlos">
+            <input type="text" id="nombre" name="nombre" class="form-control" required placeholder="Ej: Carlos">
         </div>
 
         <div class="form-field">
             <label for="apellido">Apellido *</label>
-            <input type="text" id="apellido" name="apellido" class="form-control" required 
-                   placeholder="Ej: López">
+            <input type="text" id="apellido" name="apellido" class="form-control" required placeholder="Ej: López">
         </div>
 
         <div class="form-field">
             <label for="fecha_nac">Fecha de nacimiento *</label>
-            <input type="date" id="fecha_nac" name="fecha_nac" class="form-control" required 
-                   max="{{ hoy }}">
+            <input type="date" id="fecha_nac" name="fecha_nac" class="form-control" required max="{{ hoy }}">
         </div>
 
         <div class="form-field">
@@ -42,8 +39,8 @@
 
         <div class="form-field">
             <label for="domicilio">Domicilio</label>
-            <input type="text" id="domicilio" name="domicilio" class="form-control" 
-                   placeholder="Ej: Calle Principal 123">
+            <input type="text" id="domicilio" name="domicilio" class="form-control"
+                placeholder="Ej: Calle Principal 123">
         </div>
 
         <div class="form-field">
@@ -106,32 +103,39 @@
 
     function cargarSelectores() {
         const datosGuardados = cargarDesdeLocalStorage();
-        
-        // Cargar disciplinas
+
+        // --- 1. Cargar disciplinas ---
         const selectDisciplina = document.getElementById('disciplina');
         selectDisciplina.innerHTML = '<option value="">Seleccione una disciplina</option>';
-        
-        if (datosGuardados.disciplinas && datosGuardados.disciplinas.ids) {
-            // En una implementación real, aquí harías una petición para obtener los nombres
-            // Por ahora usaremos los IDs directamente
-            datosGuardados.disciplinas.ids.forEach(id => {
+
+        const disciplinasData = datosGuardados.disciplinas;
+
+        if (disciplinasData && disciplinasData.ids && disciplinasData.nombres) {
+            // Recorremos los arrays de IDs y Nombres. 
+            // ¡Importante! Asumimos que los arrays de IDs y Nombres están en el mismo orden.
+            for (let i = 0; i < disciplinasData.ids.length; i++) {
+                const id = disciplinasData.ids[i];
+                const nombre = disciplinasData.nombres[i];
+
                 const option = document.createElement('option');
+                // El valor (value) siempre debe ser el ID (para enviar a Django)
                 option.value = id;
-                option.textContent = `${disciplina}`; // Temporal - deberías obtener el nombre real
+                // El texto visible (textContent) es el nombre de la disciplina
+                option.textContent = nombre;
                 selectDisciplina.appendChild(option);
-            });
+            }
         }
 
         // Cargar tutores
         const selectTutor = document.getElementById('tutor');
         selectTutor.innerHTML = '<option value="">Seleccione un tutor</option>';
-        
+
         if (datosGuardados.tutores) {
             // Ordenar tutores por apellido
-            const tutoresOrdenados = [...datosGuardados.tutores].sort((a, b) => 
+            const tutoresOrdenados = [...datosGuardados.tutores].sort((a, b) =>
                 a.apellido.localeCompare(b.apellido)
             );
-            
+
             tutoresOrdenados.forEach(tutor => {
                 const option = document.createElement('option');
                 option.value = tutor.dni_tutor;
@@ -144,7 +148,7 @@
     function registrarAlumno() {
         const form = document.getElementById('formAlumno');
         const formData = new FormData(form);
-        
+
         // Validar campos requeridos
         const camposRequeridos = ['dni_alumno', 'nombre', 'apellido', 'fecha_nac', 'disciplina', 'tutor'];
         for (let campo of camposRequeridos) {
@@ -195,7 +199,7 @@
 
         const datosGuardados = cargarDesdeLocalStorage();
         const alumnos = datosGuardados.alumnos || [];
-        
+
         const nuevosAlumnos = alumnos.filter(a => a.dni_alumno !== dni);
         guardarEnLocalStorage({ alumnos: nuevosAlumnos });
 
@@ -226,7 +230,7 @@
         }
 
         noData.style.display = 'none';
-        
+
         alumnos.forEach(alumno => {
             // Obtener nombre del tutor
             let nombreTutor = 'No asignado';
@@ -260,7 +264,7 @@
     function siguientePaso() {
         const datosGuardados = cargarDesdeLocalStorage();
         const alumnos = datosGuardados.alumnos || [];
-        
+
         if (alumnos.length > 0) {
             window.location.href = "{% url 'escuelas:registro_wizard' 'finalizar' %}";
         } else {
@@ -269,13 +273,13 @@
     }
 
     // Inicializar
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         cargarSelectores();
         actualizarTablaAlumnos();
-        
+
         const datosGuardados = cargarDesdeLocalStorage();
         const alumnos = datosGuardados.alumnos || [];
-        
+
         if (alumnos.length > 0) {
             document.getElementById('btnSiguienteAlumnos').disabled = false;
             document.getElementById('btnSiguienteAlumnos').classList.remove('btn-siguiente');
