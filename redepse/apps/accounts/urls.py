@@ -39,5 +39,7 @@ path('reset/done/', auth_views.PasswordResetCompleteView.as_view(
 ), name='password_reset_complete'),
 
 path('enviar-capacitacion/', views.enviar_capacitacion, name='enviar_capacitacion'),
+path('reenviar-activacion/', views.reenviar_activacion, name='reenviar_activacion'),
+
 
 ]

@@ -3,8 +3,9 @@ from django.contrib.auth.models import User
 
 class Documento(models.Model):
     TIPOS_DOCUMENTO = [
-        ('nota_secretario', 'Nota al Secretario'),
-        ('respaldo_institucional', 'Respaldo Institucional'),
+    ('nota_secretario', 'Nota al Secretario'),
+    ('respaldo_institucional', 'Respaldo Institucional'),
+    ('certificado_buena_conducta', 'Certificado de buena conducta'),
     ]
     
     id_documento = models.AutoField(primary_key=True)
