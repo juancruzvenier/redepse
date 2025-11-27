@@ -145,6 +145,7 @@
 
         // 1. Validar que existan datos antes de intentar nada
         const datosCompletos = cargarDesdeLocalStorage();
+        consolwe.log("Datos completos para envío:", datosCompletos);
         if (!datosCompletos || Object.keys(datosCompletos).length === 0) {
             showToast('Error: No hay datos guardados. Por favor complete el formulario nuevamente.', 'error');
             return;
