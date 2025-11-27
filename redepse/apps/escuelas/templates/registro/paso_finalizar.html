@@ -231,7 +231,7 @@
             console.log("Error al intentar borrar la base de datos temporal");
         };
     }
-
+    
     function cargarResumen() {
         const datosGuardados = cargarDesdeLocalStorage();
 
@@ -239,13 +239,26 @@
         const resumenEscuela = document.getElementById('resumenEscuela');
         if (datosGuardados.escuela) {
             const escuela = datosGuardados.escuela;
+            
+            // Verificamos si hay coordenadas para mostrar un mensajito o link
+            let ubicacionHTML = '<p><strong>Ubicación:</strong> No especificada</p>';
+            if (escuela.latitud && escuela.longitud) {
+                // Link a Google Maps para verificar visualmente
+                ubicacionHTML = `
+                    <p><strong>Ubicación:</strong> 
+                    <a href="https://www.google.com/maps?q=${escuela.latitud},${escuela.longitud}" target="_blank" style="color: #0066ff;">
+                        📍 Ver en mapa
+                    </a>
+                    </p>`;
+            }
+
             resumenEscuela.innerHTML = `
                 <p><strong>Nombre:</strong> ${escuela.nombre_esc}</p>
                 <p><strong>Localidad:</strong> ${escuela.localidad}</p>
                 <p><strong>Dirección:</strong> ${escuela.direccion}</p>
                 <p><strong>Email:</strong> ${escuela.email}</p>
                 <p><strong>Teléfono:</strong> ${escuela.telefono1}</p>
-            `;
+                ${ubicacionHTML} `;
         } else {
             resumenEscuela.innerHTML = '<p style="color: #e84118;">No se encontraron datos de la escuela</p>';
         }

@@ -114,6 +114,8 @@ class Escuela(models.Model):
     solicitud_enviada = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     dni_resp = models.ForeignKey('Responsable', models.DO_NOTHING, db_column='dni_resp', null=True, blank=True)
+    latitud = models.FloatField(null=True, blank=True)
+    longitud = models.FloatField(null=True, blank=True)
 
     class Meta:
         db_table = 'escuela'

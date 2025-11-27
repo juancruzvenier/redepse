@@ -120,7 +120,10 @@ def finalizar_registro(request):
                     telefono1=escuela_data.get('telefono1'),
                     solicitud_enviada=True,
                     user=request.user,
-                    estado='pendiente'
+                    estado='pendiente',
+                    # AGREGAR ESTAS DOS LÍNEAS:
+                    latitud=escuela_data.get('latitud'),   # Recibe el valor o None
+                    longitud=escuela_data.get('longitud'), # Recibe el valor o None
                 )
 
                 # === ACÁ ESTÁ EL CAMBIO CLAVE ===
