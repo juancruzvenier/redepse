@@ -142,6 +142,14 @@
     // --- LÓGICA PRINCIPAL DE ENVÍO ---
     async function ejecutarEnvioReal() {
         cerrarModal(); // Cerramos el modal inmediatamente
+
+        // 1. Validar que existan datos antes de intentar nada
+        const datosCompletos = cargarDesdeLocalStorage();
+        consolwe.log("Datos completos para envío:", datosCompletos);
+        if (!datosCompletos || Object.keys(datosCompletos).length === 0) {
+            showToast('Error: No hay datos guardados. Por favor complete el formulario nuevamente.', 'error');
+            return;
+        }
         
         const btnEnviar = document.getElementById('btnEnviarSolicitud');
         btnEnviar.disabled = true;

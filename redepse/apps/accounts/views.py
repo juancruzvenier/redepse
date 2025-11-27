@@ -125,7 +125,7 @@ def login_view(request):
             else:
                 return redirect('escuelas:registro_wizard', paso='escuela')
         else:
-            messages.error(request, 'Correo o contraseA�a incorrectos.')
+            messages.error(request, 'Correo o contraseña incorrectos.')
 
     return render(request, 'accounts/login.html')
 

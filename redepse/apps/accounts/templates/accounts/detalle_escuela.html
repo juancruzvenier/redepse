@@ -123,9 +123,18 @@
 
   let ubicacionHTML = "<p><strong>Ubicación:</strong> No especificada</p>";
   if (lat && lng) {
+    // 1. Preparamos las variables SOLO para la URL (cambiamos , por .)
+    const latUrl = String(lat).replace(',', '.');
+    const lngUrl = String(lng).replace(',', '.');
+
     ubicacionHTML = `
       <p><strong>Coordenadas:</strong> ${lat}, ${lng}</p>
-      <p><a href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}" target="_blank" style="color:#0066ff; text-decoration:none;">Ver en Google Maps</a></p>
+      
+      <p>
+        <a href="https://www.google.com/maps?q=${latUrl},${lngUrl}" target="_blank" style="color:#0066ff; text-decoration:none;">
+            Ver en Google Maps
+        </a>
+      </p>
       <div id="mapaDatos" class="mapa-datos"></div>
     `;
   }
@@ -152,20 +161,25 @@
     setTimeout(() => initMapaDatos(lat, lng), 50);
   }
 }
-let mapaDatos;
-  function initMapaDatos(lat, lng) {
-    const latNum = parseFloat(lat), lngNum = parseFloat(lng);
-    if (isNaN(latNum) || isNaN(lngNum)) return;
+  let mapaDatos;
+    function initMapaDatos(lat, lng) {
+      // 1. Aseguramos que sea string y reemplazamos coma por punto
+      const latStr = String(lat).replace(',', '.');
+      const lngStr = String(lng).replace(',', '.');
+      const latNum = parseFloat(latStr);
+      const lngNum = parseFloat(lngStr);
+    // const latNum = parseFloat(lat), lngNum = parseFloat(lng);
+      if (isNaN(latNum) || isNaN(lngNum)) return;
 
-    if (mapaDatos) {
-      mapaDatos.remove();
+      if (mapaDatos) {
+        mapaDatos.remove();
+      }
+      mapaDatos = L.map('mapaDatos').setView([latNum, lngNum], 14);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(mapaDatos);
+      L.marker([latNum, lngNum]).addTo(mapaDatos);
     }
-    mapaDatos = L.map('mapaDatos').setView([latNum, lngNum], 14);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(mapaDatos);
-    L.marker([latNum, lngNum]).addTo(mapaDatos);
-  }
         function mostrarDocumentacion() {
             // Documentos de la escuela
             const documentos = [
