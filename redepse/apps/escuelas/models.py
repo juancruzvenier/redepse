@@ -3,8 +3,9 @@ from django.contrib.auth.models import User
 
 class Documento(models.Model):
     TIPOS_DOCUMENTO = [
-        ('nota_secretario', 'Nota al Secretario'),
-        ('respaldo_institucional', 'Respaldo Institucional'),
+    ('nota_secretario', 'Nota al Secretario'),
+    ('respaldo_institucional', 'Respaldo Institucional'),
+    ('certificado_buena_conducta', 'Certificado de buena conducta'),
     ]
     
     id_documento = models.AutoField(primary_key=True)
@@ -96,6 +97,12 @@ class Entrenador(models.Model):
         blank=True,
         null=True
     )
+    # NUEVO CAMPO
+    buena_conducta = models.FileField(
+        upload_to='entrenadores/conducta/', 
+        null=True, 
+        blank=True
+    )
 
     class Meta:
         db_table = 'entrenador'
@@ -114,6 +121,8 @@ class Escuela(models.Model):
     solicitud_enviada = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     dni_resp = models.ForeignKey('Responsable', models.DO_NOTHING, db_column='dni_resp', null=True, blank=True)
+    latitud = models.FloatField(null=True, blank=True)
+    longitud = models.FloatField(null=True, blank=True)
 
     class Meta:
         db_table = 'escuela'
@@ -140,7 +149,7 @@ class Participacion(models.Model):
 
 
 class Periodo(models.Model):
-    id_periodo = models.IntegerField(primary_key=True, unique=True)
+    periodo = models.IntegerField(primary_key=True, unique=True)
 
     class Meta:
         db_table = 'periodo'

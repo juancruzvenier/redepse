@@ -1,5 +1,9 @@
 {% extends "registro/wizard_base.html" %} {% load static %}
+
 {% block paso_content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
 <form id="formEscuela" class="form-registro">
   {% csrf_token %}
 
@@ -8,24 +12,12 @@
   <div class="form-grid">
     <div class="form-field">
       <label for="nombre_esc">Nombre de la escuela *</label>
-      <input
-        type="text"
-        id="nombre_esc"
-        name="nombre_esc"
-        class="form-control"
-        required
-        placeholder="Ej: Escuela Deportiva Central"
-      />
+      <input type="text" id="nombre_esc" name="nombre_esc" class="form-control" required placeholder="Ej: Escuela Deportiva Central" />
     </div>
 
     <div class="form-field">
       <label for="departamento">Departamento *</label>
-      <select
-        id="departamento"
-        name="departamento"
-        class="form-control"
-        required
-      >
+      <select id="departamento" name="departamento" class="form-control" required>
         <option value="">Seleccione un departamento</option>
         <option value="Aguirre">Aguirre</option>
         <option value="Alberdi">Alberdi</option>
@@ -59,54 +51,34 @@
 
     <div class="form-field">
       <label for="localidad">Localidad *</label>
-      <select
-        id="localidad"
-        name="localidad"
-        class="form-control"
-        required
-        disabled
-      >
+      <select id="localidad" name="localidad" class="form-control" required disabled>
         <option value="">Primero seleccione un departamento</option>
       </select>
     </div>
 
     <div class="form-field">
       <label for="direccion">Dirección de la escuela *</label>
-      <input
-        type="text"
-        id="direccion"
-        name="direccion"
-        class="form-control"
-        required
-        placeholder="Ej: Av. Central 123"
-      />
+      <input type="text" id="direccion" name="direccion" class="form-control" required placeholder="Ej: Av. Central 123" />
     </div>
 
     <div class="form-field">
       <label for="email">Correo electrónico *</label>
-      <input
-        type="email"
-        id="email"
-        name="email"
-        class="form-control"
-        required
-        placeholder="ejemplo@escuela.com"
-      />
+      <input type="email" id="email" name="email" class="form-control" required placeholder="ejemplo@escuela.com" />
     </div>
 
     <div class="form-field">
       <label for="telefono1">Teléfono de contacto *</label>
-      <input
-        type="tel"
-        id="telefono1"
-        name="telefono1"
-        class="form-control"
-        required
-        placeholder="Ej: 3854123456"
-        pattern="[0-9]+"
-        title="Solo se permiten números"
-      />
+      <input type="tel" id="telefono1" name="telefono1" class="form-control" required placeholder="Ej: 3854123456" pattern="[0-9]+" title="Solo se permiten números" />
     </div>
+  </div>
+
+  <div class="form-field" style="margin-top: 20px; grid-column: 1 / -1;">
+    <label>Ubicación en el mapa *</label>
+    <div id="mapaEscuela" style="height: 300px; width: 100%; border-radius: 8px; border: 1px solid #ccc; z-index: 1;"></div>
+    <small style="color: #666;">Haga clic en el mapa o arrastre el pin para marcar la ubicación exacta.</small>
+    
+    <input type="hidden" id="latitud" name="latitud">
+    <input type="hidden" id="longitud" name="longitud">
   </div>
 
   <hr style="margin: 30px 0; border: 1px solid #ddd" />
@@ -116,107 +88,50 @@
   <div class="form-grid">
     <div class="form-field">
       <label for="dni_resp">DNI del responsable *</label>
-      <input
-        type="number"
-        id="dni_resp"
-        name="dni_resp"
-        class="form-control"
-        required
-        placeholder="Ej: 30123456"
-        min="1000000"
-        max="99999999"
-      />
+      <input type="number" id="dni_resp" name="dni_resp" class="form-control" required placeholder="Ej: 30123456" min="1000000" max="99999999" />
     </div>
 
     <div class="form-field">
       <label for="resp_nombre">Nombre del responsable *</label>
-      <input
-        type="text"
-        id="resp_nombre"
-        name="resp_nombre"
-        class="form-control"
-        required
-        placeholder="Ej: Juan"
-      />
+      <input type="text" id="resp_nombre" name="resp_nombre" class="form-control" required placeholder="Ej: Juan" />
     </div>
 
     <div class="form-field">
       <label for="resp_apellido">Apellido del responsable *</label>
-      <input
-        type="text"
-        id="resp_apellido"
-        name="resp_apellido"
-        class="form-control"
-        required
-        placeholder="Ej: Pérez"
-      />
+      <input type="text" id="resp_apellido" name="resp_apellido" class="form-control" required placeholder="Ej: Pérez" />
     </div>
 
     <div class="form-field">
       <label for="resp_email">Correo electrónico del responsable *</label>
-      <input
-        type="email"
-        id="resp_email"
-        name="resp_email"
-        class="form-control"
-        required
-        placeholder="ejemplo@email.com"
-      />
+      <input type="email" id="resp_email" name="resp_email" class="form-control" required placeholder="ejemplo@email.com" />
     </div>
 
     <div class="form-field">
       <label for="resp_telefono1">Teléfono del responsable *</label>
-      <input
-        type="tel"
-        id="resp_telefono1"
-        name="resp_telefono1"
-        class="form-control"
-        required
-        placeholder="Ej: 3854123456"
-        pattern="[0-9]+"
-      />
+      <input type="tel" id="resp_telefono1" name="resp_telefono1" class="form-control" required placeholder="Ej: 3854123456" pattern="[0-9]+" />
     </div>
   </div>
 
   <div class="form-actions">
-    <button
-      type="button"
-      id="btnGuardarEscuela"
-      class="btn-guardar"
-      onclick="guardarEscuela()"
-    >
+    <button type="button" id="btnGuardarEscuela" class="btn-guardar" onclick="guardarEscuela()">
       Guardar
     </button>
-    <button
-      type="button"
-      id="btnSiguienteEscuela"
-      class="btn-siguiente"
-      onclick="siguientePaso()"
-      disabled
-    >
+    <button type="button" id="btnSiguienteEscuela" class="btn-siguiente" onclick="siguientePaso()" disabled>
       Siguiente →
     </button>
   </div>
 </form>
-{% endblock %} {% block extra_scripts %}
+{% endblock %} 
+
+{% block extra_scripts %}
 <script>
   let escuelaGuardada = false;
+  let map, marker; // Variables para el mapa
 
-  // Mapeo de departamentos a localidades
+  // Mapeo de departamentos a localidades (Tu código original)
   const localidadesPorDepartamento = {
-    Capital: [
-      "Santiago del Estero",
-      "El Zanjón",
-      "La Banda",
-      "Los Telares",
-      "Clodomira",
-    ],
-    Banda: [
-      "La Banda",
-      "Los Pirpintos",
-      "Villa Atamisqui",
-      "Villa General Mitre",
-    ],
+    Capital: ["Santiago del Estero", "El Zanjón", "La Banda", "Los Telares", "Clodomira"],
+    Banda: ["La Banda", "Los Pirpintos", "Villa Atamisqui", "Villa General Mitre"],
     Figueroa: ["La Cañada", "Laprida", "Pozo Hondo", "Villa Figueroa"],
     Moreno: ["Quimilí", "Los Juríes", "Pampa de los Guanacos", "Tintina"],
     "Juan Felipe Ibarra": ["Suncho Corral", "Villa Unión"],
@@ -250,8 +165,7 @@
 
     selectDepartamento.addEventListener("change", function () {
       const departamento = this.value;
-      selectLocalidad.innerHTML =
-        '<option value="">Seleccione una localidad</option>';
+      selectLocalidad.innerHTML = '<option value="">Seleccione una localidad</option>';
 
       if (departamento && localidadesPorDepartamento[departamento]) {
         selectLocalidad.disabled = false;
@@ -267,6 +181,47 @@
     });
   }
 
+  // 3. NUEVO: Lógica del Mapa
+  function inicializarMapa(lat = -27.7834, lng = -64.2642) { // Coordenadas por defecto (SDE Capital)
+      // Crear el mapa
+      map = L.map('mapaEscuela').setView([lat, lng], 13);
+
+      // Agregar capa de OpenStreetMap
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      // Crear marcador arrastrable
+      marker = L.marker([lat, lng], {
+          draggable: true
+      }).addTo(map);
+
+      // Actualizar inputs al arrastrar
+      marker.on('dragend', function(event) {
+          const position = marker.getLatLng();
+          actualizarInputs(position.lat, position.lng);
+      });
+
+      // Mover marcador al hacer clic en el mapa
+      map.on('click', function(e) {
+          marker.setLatLng(e.latlng);
+          actualizarInputs(e.latlng.lat, e.latlng.lng);
+      });
+      
+      // Inicializar inputs si no estaban seteados
+      if (!document.getElementById('latitud').value) {
+          actualizarInputs(lat, lng);
+      }
+      
+      // Forzar renderizado correcto (a veces el mapa se ve gris si está oculto al inicio)
+      setTimeout(() => { map.invalidateSize(); }, 200);
+  }
+
+  function actualizarInputs(lat, lng) {
+      document.getElementById('latitud').value = lat;
+      document.getElementById('longitud').value = lng;
+  }
+
   function guardarEscuela() {
     const form = document.getElementById("formEscuela");
     const formData = new FormData(form);
@@ -277,7 +232,6 @@
       return;
     }
 
-    // Validar que se seleccionó departamento y localidad
     const departamento = document.getElementById("departamento").value;
     const localidad = document.getElementById("localidad").value;
 
@@ -292,6 +246,10 @@
       datosEscuela[key] = value;
     }
 
+    // Aseguramos que se guarden las coordenadas
+    datosEscuela['latitud'] = document.getElementById('latitud').value;
+    datosEscuela['longitud'] = document.getElementById('longitud').value;
+
     guardarEnLocalStorage({
       escuela: datosEscuela,
       departamento: departamento,
@@ -299,12 +257,9 @@
     });
     escuelaGuardada = true;
 
-    // Actualizar estado de botones
     document.getElementById("btnGuardarEscuela").disabled = true;
     document.getElementById("btnSiguienteEscuela").disabled = false;
-    document
-      .getElementById("btnSiguienteEscuela")
-      .classList.remove("btn-siguiente");
+    document.getElementById("btnSiguienteEscuela").classList.remove("btn-siguiente");
     document.getElementById("btnSiguienteEscuela").classList.add("btn-aprobar");
 
     showToast("Datos de escuela guardados correctamente");
@@ -312,8 +267,7 @@
 
   function siguientePaso() {
     if (escuelaGuardada) {
-      window.location.href =
-        "{% url 'escuelas:registro_wizard' 'documentacion' %}";
+      window.location.href = "{% url 'escuelas:registro_wizard' 'documentacion' %}";
     } else {
       showToast("Debe guardar los datos antes de continuar", "error");
     }
@@ -324,41 +278,43 @@
     configurarDepartamentos();
 
     const datosGuardados = cargarDesdeLocalStorage();
+    let latInicial = -27.7834;
+    let lngInicial = -64.2642;
+
     if (datosGuardados.escuela) {
-      // Prellenar formulario
       const escuelaData = datosGuardados.escuela;
       for (const [key, value] of Object.entries(escuelaData)) {
         const field = document.querySelector(`[name="${key}"]`);
         if (field) field.value = value;
       }
 
-      // Prellenar departamento y localidad si existen
+      // Recuperar coordenadas si existen
+      if (escuelaData.latitud && escuelaData.longitud) {
+          latInicial = parseFloat(escuelaData.latitud);
+          lngInicial = parseFloat(escuelaData.longitud);
+      }
+
       if (datosGuardados.departamento) {
-        document.getElementById("departamento").value =
-          datosGuardados.departamento;
-        document
-          .getElementById("departamento")
-          .dispatchEvent(new Event("change"));
+        document.getElementById("departamento").value = datosGuardados.departamento;
+        document.getElementById("departamento").dispatchEvent(new Event("change"));
 
         if (datosGuardados.localidad) {
           setTimeout(() => {
-            document.getElementById("localidad").value =
-              datosGuardados.localidad;
+            document.getElementById("localidad").value = datosGuardados.localidad;
           }, 100);
         }
       }
 
       escuelaGuardada = true;
       document.getElementById("btnSiguienteEscuela").disabled = false;
-      document
-        .getElementById("btnSiguienteEscuela")
-        .classList.remove("btn-siguiente");
-      document
-        .getElementById("btnSiguienteEscuela")
-        .classList.add("btn-aprobar");
+      document.getElementById("btnSiguienteEscuela").classList.remove("btn-siguiente");
+      document.getElementById("btnSiguienteEscuela").classList.add("btn-aprobar");
     }
 
     configurarDeteccionCambios("formEscuela", "btnGuardarEscuela");
+    
+    // Iniciar mapa al final
+    inicializarMapa(latInicial, lngInicial);
   });
 </script>
 {% endblock %}

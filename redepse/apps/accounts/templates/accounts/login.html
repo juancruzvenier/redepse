@@ -44,8 +44,10 @@
       </form>
       <a href="{% url 'accounts:register' %}">¿No tienes cuenta? Regístrate</a> <br>
       <a href="{% url 'accounts:password_reset' %}" class="link-recuperar">¿Olvidaste tu contraseña? Recupérala aquí</a>
+      <a href="{% url 'accounts:reenviar_activacion' %}" class="link-recuperar">¿No recibiste o expiró el correo de activación? </a>
       <a target="_blank" href="../../../../static/files/INSTRUCTIVO.pdf">¿No sabes cómo empezar? Descarga el instructivo</a>
       <a href="{% url 'home' %}">Volver a la página principal</a>
+      
       
       <script>
         function togglePass(id, btn) {

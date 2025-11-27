@@ -16,9 +16,13 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from django.views.decorators.http import require_POST
 from .forms import RegisterForm, LoginForm
+from storages.backends.s3boto3 import S3Boto3Storage
+import os
+from django.views.decorators.http import require_http_methods
 from apps.escuelas.models import (
     Escuela, Entrenador, EntDiscEscPer, Solicitudes,
-    Alumno, Inscripcion, Tutor, Disciplina
+    Alumno, Inscripcion, Tutor, Disciplina , Documento
+    
 )
 
 # ====================================================
@@ -40,8 +44,20 @@ def register_view(request):
             )
 
             subject = "Activa tu cuenta"
-            context = {"user": user, "activation_link": activation_link}
-            html_body = render_to_string('accounts/activation_email.html', context)
+            context = {
+                "subject": subject,
+                "title": "Confirma tu correo",
+                "body": (
+                    f"<p>Hola <b>{user.username}</b>,</p>"
+                    f"<p>Gracias por registrarte. Para activar tu cuenta haz clic en el botón:</p>"
+                    f"<p style='text-align:center; margin:24px 0;'>"
+                    f"<a href='{activation_link}' style='display:inline-block; padding:12px 20px; background:#0a69ff; color:#fff; text-decoration:none; border-radius:8px;'>"
+                    f"Activar cuenta</a></p>"
+                    f"<p>Si el botón no funciona, copia y pega este enlace:</p>"
+                    f"<p style='word-break:break-all; font-size:13px;'>{activation_link}</p>"
+                ),
+            }
+            html_body = render_to_string("accounts/email_base.html", context)
 
             email = EmailMultiAlternatives(
                 subject=subject,
@@ -216,7 +232,38 @@ def detalle_escuela(request, id_esc):
     escuela = get_object_or_404(Escuela, id_esc=id_esc)
     origen = request.GET.get('from', 'admin_dashboard')
 
+    # --- CORRECCIÓN CRÍTICA DE R2 ---
+    # 1. Aseguramos que la URL del endpoint esté limpia (sin bucket al final)
+    endpoint = os.getenv('R2_ENDPOINT_URL')
+    bucket_name = os.getenv('R2_BUCKET_NAME')
+    if endpoint and bucket_name and endpoint.endswith(f"/{bucket_name}"):
+        endpoint = endpoint.replace(f"/{bucket_name}", "")
+
+    r2_storage = S3Boto3Storage(
+        access_key=os.getenv('R2_ACCESS_KEY_ID'),
+        secret_key=os.getenv('R2_SECRET_ACCESS_KEY'),
+        bucket_name=bucket_name,
+        endpoint_url=endpoint,
+        # TRUCO: Usar 'us-east-1' en lugar de 'auto' para lectura. 
+        # R2 acepta firmas de us-east-1 y esto evita conflictos de redirección.
+        region_name='us-east-1',  
+        default_acl='private',
+        signature_version='s3v4',
+        addressing_style='path',
+        # IMPORTANTE: Forzamos que no use dominios personalizados automáticos
+        custom_domain=None, 
+        querystring_auth=True
+    )
+
+    documentos = Documento.objects.filter(id_esc=id_esc).order_by('-fecha_subida')
+    for d in documentos:
+        # Esto regenerará la URL correctamente firmada
+        d.documento.storage = r2_storage 
+
     entrenadores = Entrenador.objects.filter(entdiscescper__id_esc=id_esc).distinct()
+    for e in entrenadores:
+        if e.buena_conducta:
+            e.buena_conducta.storage = r2_storage
     solicitud = Solicitudes.objects.filter(id_esc=id_esc).first()
     alumnos = Alumno.objects.filter(inscripcion__id_esc=id_esc).distinct()
     tutores = Tutor.objects.filter(
@@ -233,6 +280,7 @@ def detalle_escuela(request, id_esc):
         'alumnos': alumnos,
         'tutores': tutores,
         'disciplinas': disciplinas,
+        'documentos': documentos,
         'origen': origen
     })
 
@@ -353,19 +401,27 @@ def enviar_capacitacion(request):
         .select_related('id_esc')
         .values_list('id_esc__email', flat=True)
     )
-    correos = [c for c in correos if c]  # filtra vacíos
+    correos = [c for c in correos if c]
 
     if not correos:
         return JsonResponse({'error': 'No hay escuelas aprobadas con correo'}, status=400)
 
+    context = {
+        "subject": subject,
+        "title": subject,
+        "body": f"<p>{body}</p>",
+    }
+    html_body = render_to_string("accounts/email_base.html", context)
+
     try:
         email_msg = EmailMultiAlternatives(
             subject=subject,
-            body=body,
+            body=body,  # texto plano
             from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None) or 'no-reply@example.com',
             to=[],
-            bcc=correos,  # bcc para enviar a todas sin exponer lista
+            bcc=correos,
         )
+        email_msg.attach_alternative(html_body, "text/html")
         email_msg.send()
     except Exception as e:
         return JsonResponse({'error': f'Error enviando correos: {e}'}, status=500)
@@ -373,7 +429,46 @@ def enviar_capacitacion(request):
     return JsonResponse({'ok': True, 'enviados': len(correos)})
 
 
+
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 
 
+@require_http_methods(["GET", "POST"])
+def reenviar_activacion(request):
+    if request.method == "GET":
+        return render(request, "accounts/reenviar_activacion.html")
+
+    email = request.POST.get('email', '').strip()
+    user = User.objects.filter(email=email, is_active=False).first()
+    if not user:
+        messages.error(request, "No hay una cuenta inactiva con ese correo.")
+        return redirect('accounts:reenviar_activacion')
+
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+    activation_link = request.build_absolute_uri(reverse('accounts:activate', args=[uid, token]))
+
+    context = {
+        "subject": "Activa tu cuenta",
+        "title": "Confirma tu correo",
+        "body": (
+            f"<p>Hola <b>{user.username}</b>,</p>"
+            f"<p>Para activar tu cuenta haz clic en el botón:</p>"
+            f"<p style='text-align:center; margin:24px 0;'>"
+            f"<a href='{activation_link}' style='display:inline-block; padding:12px 20px; background:#0a69ff; color:#fff; text-decoration:none; border-radius:8px;'>"
+            f"Activar cuenta</a></p>"
+            f"<p style='word-break:break-all; font-size:13px;'>{activation_link}</p>"
+        ),
+    }
+    html_body = render_to_string("accounts/email_base.html", context)
+    email_msg = EmailMultiAlternatives(
+        subject=context["subject"],
+        body=f"Activa tu cuenta aquí: {activation_link}",
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[user.email],
+    )
+    email_msg.attach_alternative(html_body, "text/html")
+    email_msg.send()
+    messages.success(request, "Te reenviamos el correo de activación.")
+    return redirect('accounts:login')

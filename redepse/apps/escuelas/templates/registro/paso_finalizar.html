@@ -17,15 +17,21 @@
 
     <h3 style="margin-bottom: 20px;">Resumen de la Solicitud</h3>
 
-
-
     <div class="resumen-section">
         <h4 style="display: flex; justify-content: space-between;">📋 Datos de la Escuela <a
                 href="{% url 'escuelas:registro_wizard' 'escuela' %}"><img src="../../../../static/img/pencil.svg"
                     width="20" height="20" alt="editar"></a> </h4>
 
         <div id="resumenEscuela" class="resumen-datos">
+            <!-- Se cargará dinámicamente -->
+        </div>
+    </div>
 
+    <div class="resumen-section">
+        <h4 style="display: flex; justify-content: space-between;">📄 Documentación <a
+                href="{% url 'escuelas:registro_wizard' 'documentacion' %}"><img src="../../../../static/img/pencil.svg"
+                    width="20" height="20" alt="editar"></a> </h4>
+        <div id="resumenDocumentacion" class="resumen-datos">
             <!-- Se cargará dinámicamente -->
         </div>
     </div>
@@ -36,7 +42,6 @@
                     width="20" height="20" alt="editar"></a> </h4>
         <div id="resumenDisciplinas" class="resumen-datos">
             <!-- Se cargará dinámicamente -->
-
         </div>
     </div>
 
@@ -71,38 +76,248 @@
         <button type="button" class="btn-denegar" onclick="anteriorPaso()">
             ← Anterior
         </button>
-        <button type="button" id="btnEnviarSolicitud" class="btn-aprobar" onclick="enviarSolicitud()">
+        <button type="button" id="btnEnviarSolicitud" class="btn-aprobar" onclick="abrirModal()">
             Enviar Solicitud
         </button>
+    </div>
+</div>
+
+<div id="modalConfirmacion" class="modal-overlay" style="display: none;">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 style="margin: 0; color: #0066ff;">⚠️ Confirmar Envío</h3>
+        </div>
+        <div class="modal-body">
+            <p style="font-size: 1.1rem; color: #333;">
+                ¿Está seguro de enviar la solicitud?
+            </p>
+            <p style="color: #666; font-size: 0.95rem;">
+                Esta acción enviará todos los datos y documentos a la Secretaría. 
+                <strong>No podrá realizar cambios posteriores.</strong>
+            </p>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn-denegar" onclick="cerrarModal()">
+                Cancelar
+            </button>
+            <button type="button" class="btn-aprobar" onclick="ejecutarEnvioReal()">
+                Sí, Enviar Solicitud
+            </button>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
+    // --- CONSTANTES GLOBALES ---
+    const DB_NAME = "RedepseFilesDB";
+    const STORE_NAME = "archivos";
+
+    // --- NAVEGACIÓN ---
     function anteriorPaso() {
         window.location.href = "{% url 'escuelas:registro_wizard' 'alumnos' %}";
     }
 
+    // --- LÓGICA DEL MODAL DE CONFIRMACIÓN ---
+    function abrirModal() {
+        // Validamos antes de abrir el modal
+        const datosCompletos = cargarDesdeLocalStorage();
+        const pasosRequeridos = ['escuela', 'disciplinas', 'entrenadores', 'tutores', 'alumnos', 'documentacion'];
+        const pasosFaltantes = pasosRequeridos.filter(paso => !datosCompletos[paso]);
+
+        if (pasosFaltantes.length > 0) {
+            showToast(`Complete los siguientes pasos antes de enviar: ${pasosFaltantes.join(', ')}`, 'error');
+            return;
+        }
+
+        // Mostrar el modal
+        document.getElementById('modalConfirmacion').style.display = 'flex';
+    }
+
+    function cerrarModal() {
+        document.getElementById('modalConfirmacion').style.display = 'none';
+    }
+
+    // --- LÓGICA PRINCIPAL DE ENVÍO ---
+    async function ejecutarEnvioReal() {
+        cerrarModal(); // Cerramos el modal inmediatamente
+        
+        const btnEnviar = document.getElementById('btnEnviarSolicitud');
+        btnEnviar.disabled = true;
+        btnEnviar.textContent = 'Procesando archivos...';
+
+        try {
+            // 1. Obtener datos JSON del localStorage
+            const datosCompletos = cargarDesdeLocalStorage();
+            
+            // 2. Preparar FormData
+            const formData = new FormData();
+            formData.append('datos_json', JSON.stringify(datosCompletos));
+
+            // 3. RECUPERAR ARCHIVOS DE LA BASE DE DATOS (INDEXEDDB)
+            
+            // A. Archivos de la Escuela (Nota y Respaldo)
+            if (datosCompletos.documentacion && datosCompletos.documentacion.completado) {
+                try {
+                    const notaFile = await obtenerArchivoDeDB('nota_secretario');
+                    const respaldoFile = await obtenerArchivoDeDB('respaldo_institucional');
+
+                    if (notaFile) {
+                        const nombre = datosCompletos.documentacion.nota_secretario?.nombre || 'nota_secretario.pdf';
+                        formData.append('nota_secretario', notaFile, nombre);
+                    }
+                    if (respaldoFile) {
+                        const nombre = datosCompletos.documentacion.respaldo_institucional?.nombre || 'respaldo_institucional.pdf';
+                        formData.append('respaldo_institucional', respaldoFile, nombre);
+                    }
+                } catch (e) { 
+                    console.warn("Advertencia: No se pudieron cargar documentos de escuela", e); 
+                }
+            }
+
+            // B. Archivos de Entrenadores (Dinámico)
+            const entrenadores = datosCompletos.entrenadores || [];
+            for (const ent of entrenadores) {
+                const dni = ent.dni_ent;
+                // Clave usada al guardar en paso_entrenadores: `entrenador_conducta_${dni}`
+                const dbKey = `entrenador_conducta_${dni}`;
+                
+                try {
+                    const archivoEntrenador = await obtenerArchivoDeDB(dbKey);
+                    
+                    if (archivoEntrenador) {
+                        // Nombre para el backend (coincide con views.py)
+                        const formKey = `file_entrenador_${dni}`;
+                        const nombreArchivo = ent.archivo_nombre || `conducta_${dni}.pdf`;
+                        
+                        formData.append(formKey, archivoEntrenador, nombreArchivo);
+                    }
+                } catch (e) {
+                    console.warn(`No se encontró archivo de conducta para entrenador ${dni}`);
+                }
+            }
+
+            // 4. ENVIAR AL SERVIDOR
+            btnEnviar.textContent = 'Enviando al servidor...';
+
+            const response = await fetch("{% url 'escuelas:finalizar_registro' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Error en el servidor');
+            }
+
+            if (data.success) {
+                showToast(data.message, 'success');
+                
+                // Limpieza total tras éxito
+                limpiarLocalStorage();
+                borrarBaseDeDatos(); 
+                
+                // Redirigir
+                setTimeout(() => {
+                    window.location.href = "{% url 'escuelas:estado' %}";
+                }, 2000);
+            } else {
+                throw new Error(data.error || 'Error desconocido');
+            }
+
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('Error: ' + error.message, 'error');
+            btnEnviar.disabled = false;
+            btnEnviar.textContent = 'Enviar Solicitud';
+        }
+    }
+
+    // --- FUNCIONES HELPER PARA INDEXEDDB ---
+    function obtenerArchivoDeDB(key) {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, 1);
+            
+            request.onerror = () => resolve(null);
+            
+            request.onsuccess = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains(STORE_NAME)) {
+                    resolve(null);
+                    return;
+                }
+                
+                const transaction = db.transaction([STORE_NAME], "readonly");
+                const store = transaction.objectStore(STORE_NAME);
+                const getRequest = store.get(key);
+
+                getRequest.onsuccess = () => {
+                    resolve(getRequest.result || null);
+                };
+                
+                getRequest.onerror = () => resolve(null);
+            };
+        });
+    }
+
+    function borrarBaseDeDatos() {
+        indexedDB.deleteDatabase(DB_NAME);
+    }
+
+    // --- CARGA DEL RESUMEN VISUAL ---
     function cargarResumen() {
         const datosGuardados = cargarDesdeLocalStorage();
 
-        // Resumen Escuela
+        // 1. Resumen Escuela
         const resumenEscuela = document.getElementById('resumenEscuela');
         if (datosGuardados.escuela) {
             const escuela = datosGuardados.escuela;
+            
+            // Verificar ubicación para el mapa
+            let ubicacionHTML = '<p><strong>Ubicación:</strong> No especificada</p>';
+            if (escuela.latitud && escuela.longitud) {
+                 ubicacionHTML = `
+                    <p><strong>Ubicación:</strong> 
+                       <a href="https://www.google.com/maps/search/?api=1&query=${escuela.latitud},${escuela.longitud}" target="_blank" style="color: #0066ff; text-decoration: none;">
+                          📍 Ver en mapa
+                       </a>
+                    </p>`;
+            }
+
             resumenEscuela.innerHTML = `
                 <p><strong>Nombre:</strong> ${escuela.nombre_esc}</p>
                 <p><strong>Localidad:</strong> ${escuela.localidad}</p>
                 <p><strong>Dirección:</strong> ${escuela.direccion}</p>
                 <p><strong>Email:</strong> ${escuela.email}</p>
                 <p><strong>Teléfono:</strong> ${escuela.telefono1}</p>
+                ${ubicacionHTML}
             `;
         } else {
             resumenEscuela.innerHTML = '<p style="color: #e84118;">No se encontraron datos de la escuela</p>';
         }
 
-        // Resumen Disciplinas
+        // 2. Resumen Documentación
+        const resumenDocumentacion = document.getElementById('resumenDocumentacion');
+        if (datosGuardados.documentacion && datosGuardados.documentacion.completado) {
+            const doc = datosGuardados.documentacion;
+            let html = '';
+            if (doc.nota_secretario?.nombre) {
+                html += `<p><strong>Nota al secretario:</strong> ${doc.nota_secretario.nombre}</p>`;
+            }
+            if (doc.respaldo_institucional?.nombre) {
+                html += `<p><strong>Respaldo institucional:</strong> ${doc.respaldo_institucional.nombre}</p>`;
+            }
+            resumenDocumentacion.innerHTML = html || '<p>Documentación cargada.</p>';
+        } else {
+            resumenDocumentacion.innerHTML = '<p style="color: #e84118;">No se cargó documentación</p>';
+        }
+
+        // 3. Resumen Disciplinas
         const resumenDisciplinas = document.getElementById('resumenDisciplinas');
         if (datosGuardados.disciplinas && datosGuardados.disciplinas.nombres) {
             const lista = datosGuardados.disciplinas.nombres.map(nombre =>
@@ -113,95 +328,32 @@
             resumenDisciplinas.innerHTML = '<p style="color: #e84118;">No se seleccionaron disciplinas</p>';
         }
 
-        // Resumen Entrenadores
+        // 4. Resumen Entrenadores
         const resumenEntrenadores = document.getElementById('resumenEntrenadores');
         if (datosGuardados.entrenadores && datosGuardados.entrenadores.length > 0) {
-            const count = datosGuardados.entrenadores.length;
-            resumenEntrenadores.innerHTML = `<p><strong>Total:</strong> ${count} entrenador(es) registrado(s)</p>`;
+            resumenEntrenadores.innerHTML = `<p><strong>Total:</strong> ${datosGuardados.entrenadores.length} entrenador(es) registrado(s)</p>`;
         } else {
             resumenEntrenadores.innerHTML = '<p style="color: #e84118;">No se registraron entrenadores</p>';
         }
 
-        // Resumen Tutores
+        // 5. Resumen Tutores
         const resumenTutores = document.getElementById('resumenTutores');
         if (datosGuardados.tutores && datosGuardados.tutores.length > 0) {
-            const count = datosGuardados.tutores.length;
-            resumenTutores.innerHTML = `<p><strong>Total:</strong> ${count} tutor(es) registrado(s)</p>`;
+            resumenTutores.innerHTML = `<p><strong>Total:</strong> ${datosGuardados.tutores.length} tutor(es) registrado(s)</p>`;
         } else {
             resumenTutores.innerHTML = '<p style="color: #e84118;">No se registraron tutores</p>';
         }
 
-        // Resumen Alumnos
+        // 6. Resumen Alumnos
         const resumenAlumnos = document.getElementById('resumenAlumnos');
         if (datosGuardados.alumnos && datosGuardados.alumnos.length > 0) {
-            const count = datosGuardados.alumnos.length;
-            resumenAlumnos.innerHTML = `<p><strong>Total:</strong> ${count} alumno(s) registrado(s)</p>`;
+            resumenAlumnos.innerHTML = `<p><strong>Total:</strong> ${datosGuardados.alumnos.length} alumno(s) registrado(s)</p>`;
         } else {
             resumenAlumnos.innerHTML = '<p style="color: #e84118;">No se registraron alumnos</p>';
         }
     }
-
-    function enviarSolicitud() {
-        if (!confirm('¿Está seguro de enviar la solicitud? Esta acción no se puede deshacer.')) {
-            return;
-        }
-
-        const btnEnviar = document.getElementById('btnEnviarSolicitud');
-        btnEnviar.disabled = true;
-        btnEnviar.textContent = 'Enviando...';
-
-        // Obtener todos los datos del localStorage
-        const datosCompletos = cargarDesdeLocalStorage();
-        console.log("Datos a enviar:", datosCompletos);  // Para debug
-
-        // Validar que todos los pasos estén completos
-        const pasosRequeridos = ['escuela', 'disciplinas', 'entrenadores', 'tutores', 'alumnos'];
-        const pasosFaltantes = pasosRequeridos.filter(paso => !datosCompletos[paso]);
-
-        if (pasosFaltantes.length > 0) {
-            showToast(`Complete los siguientes pasos antes de enviar: ${pasosFaltantes.join(', ')}`, 'error');
-            btnEnviar.disabled = false;
-            btnEnviar.textContent = 'Enviar Solicitud';
-            return;
-        }
-
-        // Enviar datos al servidor
-        fetch("{% url 'escuelas:finalizar_registro' %}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify(datosCompletos)
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    showToast(data.message, 'success');
-                    limpiarLocalStorage();
-
-                    // Redirigir a la página de estado después de 2 segundos
-                    setTimeout(() => {
-                        window.location.href = "{% url 'escuelas:estado' %}";
-                    }, 2000);
-                } else {
-                    throw new Error(data.error || 'Error al enviar la solicitud');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showToast('Error al enviar la solicitud: ' + error.message, 'error');
-                btnEnviar.disabled = false;
-                btnEnviar.textContent = 'Enviar Solicitud';
-            });
-    }
-
-    // Inicializar
+    
+    // --- INICIALIZACIÓN ---
     document.addEventListener('DOMContentLoaded', function () {
         cargarResumen();
     });
@@ -236,6 +388,50 @@
         border-radius: 12px;
         margin: 2px;
         font-size: 0.9rem;
+    }
+
+    /* Estilos del Modal */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5); /* Fondo semitransparente oscuro */
+        z-index: 1000; /* Por encima de todo */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(3px); /* Efecto borroso suave en el fondo */
+    }
+
+    .modal-box {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 450px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        animation: slideIn 0.3s ease-out;
+        border-top: 5px solid #0066ff; /* Detalle de color arriba */
+    }
+
+    .modal-body {
+        margin: 20px 0;
+        line-height: 1.5;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px;
+        margin-top: 25px;
+    }
+
+    /* Animación de entrada */
+    @keyframes slideIn {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
     }
 </style>
 {% endblock %}
