@@ -179,6 +179,7 @@ AWS_S3_OBJECT_PARAMETERS = {
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
+
 '''
 # Verificar configuración completa
 r2_configured = all([
@@ -208,3 +209,5 @@ else:
     if not AWS_S3_ENDPOINT_URL: missing.append('R2_ENDPOINT_URL')
     print(f"   Faltan: {', '.join(missing)}")
 '''
+
+PASSWORD_RESET_TIMEOUT = 60 * 60 * 24 * 7

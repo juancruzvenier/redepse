@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>{{ subject }}</title></head>
+<body style="font-family:'Poppins',sans-serif; background:#f4f6fa; padding:30px;">
+  <div style="max-width:600px; margin:auto; background:#fff; border-radius:12px;
+              box-shadow:0 4px 20px rgba(0,0,0,0.1); overflow:hidden;">
+    <div style="background:linear-gradient(90deg,#0066ff,#ff0040); padding:15px; text-align:center;">
+      <img src="static/accounts/img/mi_logo.png" alt="REDEPSE" style="height:60px;">
+    </div>
+    <div style="padding:25px;">
+      <h2 style="color:#0066ff;">{{ title }}</h2>
+      {{ body|safe }}
+      {% if footer is not defined or footer %}
+      <p style="font-size:14px; color:#666; margin-top:24px;">Saludos,<br><b>Equipo REDEPSE</b></p>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>
