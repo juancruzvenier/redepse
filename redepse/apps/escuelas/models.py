@@ -96,6 +96,12 @@ class Entrenador(models.Model):
         blank=True,
         null=True
     )
+    # NUEVO CAMPO
+    buena_conducta = models.FileField(
+        upload_to='entrenadores/conducta/', 
+        null=True, 
+        blank=True
+    )
 
     class Meta:
         db_table = 'entrenador'

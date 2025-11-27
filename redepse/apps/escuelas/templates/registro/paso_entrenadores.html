@@ -49,6 +49,13 @@
             <input type="text" id="domicilio" name="domicilio" class="form-control" 
                    placeholder="Ej: Calle Principal 123">
         </div>
+
+        <div class="form-field" style="grid-column: 1 / -1;">
+            <label for="buena_conducta">Certificado de Buena Conducta (PDF) *</label>
+            <input type="file" id="buena_conducta" name="buena_conducta" class="form-control" 
+                   accept=".pdf,.doc,.docx" required>
+            <small style="color: #666;">Formatos aceptados: .pdf, .doc, .docx</small>
+        </div>
     </div>
 
     <div class="form-actions">
@@ -61,25 +68,19 @@
     </div>
 </form>
 
-<!-- Tabla de entrenadores registrados -->
 <div id="tablaContainer" class="table-section" style="margin-top: 30px;">
     <h3>Entrenadores Registrados</h3>
     <table id="tablaEntrenadores" class="data-table">
         <thead>
             <tr>
                 <th>DNI</th>
-                <th>Nombre</th>
-                <th>Apellido</th>
-                <th>Fecha Nac.</th>
-                <th>Email</th>
-                <th>Teléfono</th>
-                <th>Domicilio</th>
-                <th>Acciones</th>
+                <th>Nombre y Apellido</th>
+                <th>Contacto</th>
+                <th>Documentación</th> <th>Acciones</th>
             </tr>
         </thead>
         <tbody id="tbodyEntrenadores">
-            <!-- Los entrenadores se cargarán aquí dinámicamente -->
-        </tbody>
+            </tbody>
     </table>
     <p id="noDataEntrenadores" class="no-data">Aún no hay entrenadores registrados</p>
 </div>
@@ -93,8 +94,32 @@
 
 {% block extra_scripts %}
 <script>
+    // Configuración DB
+    let db;
+    const DB_NAME = "RedepseFilesDB";
+    const STORE_NAME = "archivos";
     const hoy = new Date().toISOString().split('T')[0];
     document.getElementById('fecha_nac').max = hoy;
+
+    // --- INICIALIZAR DB ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const request = indexedDB.open(DB_NAME, 1);
+        
+        request.onerror = (event) => console.error("Error DB:", event);
+        
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                db.createObjectStore(STORE_NAME);
+            }
+        };
+
+        request.onsuccess = (event) => {
+            db = event.target.result;
+            actualizarTablaEntrenadores(); // Cargar tabla recién cuando la DB esté lista
+            verificarBotonSiguiente();
+        };
+    });
 
     function anteriorPaso() {
         window.location.href = "{% url 'escuelas:registro_wizard' 'disciplinas' %}";
@@ -103,8 +128,9 @@
     function registrarEntrenador() {
         const form = document.getElementById('formEntrenador');
         const formData = new FormData(form);
+        const fileInput = document.getElementById('buena_conducta');
         
-        // Validar campos requeridos
+        // 1. Validaciones
         const camposRequeridos = ['dni_ent', 'nombre', 'apellido', 'fecha_nac'];
         for (let campo of camposRequeridos) {
             if (!formData.get(campo)) {
@@ -113,10 +139,25 @@
             }
         }
 
+        if (fileInput.files.length === 0) {
+            showToast('Debe subir el certificado de buena conducta', 'error');
+            return;
+        }
+
+        const archivo = fileInput.files[0];
+        // Validar extensión
+        const ext = archivo.name.split('.').pop().toLowerCase();
+        if (!['pdf', 'doc', 'docx'].includes(ext)) {
+            showToast('Solo se permiten archivos PDF o Word', 'error');
+            return;
+        }
+
         // Crear objeto entrenador
         const entrenador = {};
         for (let [key, value] of formData.entries()) {
-            entrenador[key] = value;
+            if (key !== 'buena_conducta') { // No guardamos el archivo en el objeto JSON
+                entrenador[key] = value;
+            }
         }
 
         // Obtener entrenadores existentes
@@ -129,45 +170,50 @@
             return;
         }
 
-        // Agregar nuevo entrenador
-        entrenadores.push(entrenador);
-        guardarEnLocalStorage({ entrenadores: entrenadores });
+        // Agregar metadatos del archivo al objeto entrenador
+        entrenador.archivo_nombre = archivo.name;
+        
+        // 2. GUARDAR EN INDEXEDDB (Clave única: entrenador_conducta_DNI)
+        const dbKey = `entrenador_conducta_${entrenador.dni_ent}`;
+        const transaction = db.transaction([STORE_NAME], "readwrite");
+        const store = transaction.objectStore(STORE_NAME);
+        store.put(archivo, dbKey);
 
-        // Limpiar formulario
-        form.reset();
+        transaction.oncomplete = () => {
+            // 3. GUARDAR EN LOCALSTORAGE Y ACTUALIZAR
+            entrenadores.push(entrenador);
+            guardarEnLocalStorage({ entrenadores: entrenadores });
 
-        // Actualizar tabla
-        actualizarTablaEntrenadores();
+            form.reset();
+            actualizarTablaEntrenadores();
+            verificarBotonSiguiente();
+            showToast('Entrenador registrado correctamente');
+        };
 
-        // Habilitar siguiente si hay al menos un entrenador
-        if (entrenadores.length > 0) {
-            document.getElementById('btnSiguienteEntrenadores').disabled = false;
-            document.getElementById('btnSiguienteEntrenadores').classList.remove('btn-siguiente');
-            document.getElementById('btnSiguienteEntrenadores').classList.add('btn-aprobar');
-        }
-
-        showToast('Entrenador registrado correctamente');
+        transaction.onerror = () => {
+            showToast('Error al guardar el archivo', 'error');
+        };
     }
 
     function eliminarEntrenador(dni) {
         if (!confirm('¿Está seguro de eliminar este entrenador?')) return;
 
+        // 1. Eliminar de LocalStorage
         const datosGuardados = cargarDesdeLocalStorage();
-        const entrenadores = datosGuardados.entrenadores || [];
-        
-        const nuevosEntrenadores = entrenadores.filter(e => e.dni_ent !== dni);
-        guardarEnLocalStorage({ entrenadores: nuevosEntrenadores });
+        let entrenadores = datosGuardados.entrenadores || [];
+        entrenadores = entrenadores.filter(e => e.dni_ent !== dni.toString());
+        guardarEnLocalStorage({ entrenadores: entrenadores });
 
-        // Actualizar tabla
-        actualizarTablaEntrenadores();
-
-        // Deshabilitar siguiente si no hay entrenadores
-        if (nuevosEntrenadores.length === 0) {
-            document.getElementById('btnSiguienteEntrenadores').disabled = true;
-            document.getElementById('btnSiguienteEntrenadores').classList.remove('btn-aprobar');
-            document.getElementById('btnSiguienteEntrenadores').classList.add('btn-siguiente');
+        // 2. Eliminar de IndexedDB
+        if (db) {
+            const dbKey = `entrenador_conducta_${dni}`;
+            const transaction = db.transaction([STORE_NAME], "readwrite");
+            const store = transaction.objectStore(STORE_NAME);
+            store.delete(dbKey);
         }
 
+        actualizarTablaEntrenadores();
+        verificarBotonSiguiente();
         showToast('Entrenador eliminado correctamente');
     }
 
@@ -188,14 +234,22 @@
         
         entrenadores.forEach(entrenador => {
             const row = document.createElement('tr');
+            
+            // Creamos ID único para el link de descarga de esta fila
+            const linkId = `link_${entrenador.dni_ent}`;
+
             row.innerHTML = `
                 <td>${entrenador.dni_ent}</td>
-                <td>${entrenador.nombre}</td>
-                <td>${entrenador.apellido}</td>
-                <td>${entrenador.fecha_nac}</td>
-                <td>${entrenador.email || '-'}</td>
-                <td>${entrenador.telefono || '-'}</td>
-                <td>${entrenador.domicilio || '-'}</td>
+                <td>${entrenador.nombre} ${entrenador.apellido}</td>
+                <td>
+                    <small>${entrenador.email || '-'}</small><br>
+                    <small>${entrenador.telefono || '-'}</small>
+                </td>
+                <td>
+                    <a id="${linkId}" href="#" target="_blank" style="color: #0066ff; text-decoration: none;">
+                        📄 ${entrenador.archivo_nombre || 'Ver Documento'}
+                    </a>
+                </td>
                 <td>
                     <button type="button" class="btn-eliminar" 
                             onclick="eliminarEntrenador('${entrenador.dni_ent}')">
@@ -204,32 +258,57 @@
                 </td>
             `;
             tbody.appendChild(row);
+
+            // Cargar el BLOB desde IndexedDB para este entrenador
+            cargarLinkArchivo(entrenador.dni_ent, linkId);
         });
+    }
+
+    function cargarLinkArchivo(dni, elementId) {
+        if (!db) return; // Si la DB no cargó aun, salimos
+
+        const dbKey = `entrenador_conducta_${dni}`;
+        const transaction = db.transaction([STORE_NAME], "readonly");
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.get(dbKey);
+
+        request.onsuccess = () => {
+            const blob = request.result;
+            const linkElement = document.getElementById(elementId);
+            if (blob && linkElement) {
+                const url = URL.createObjectURL(blob);
+                linkElement.href = url;
+            } else if (linkElement) {
+                linkElement.style.color = 'red';
+                linkElement.textContent = '⚠️ Error al cargar';
+                linkElement.onclick = (e) => e.preventDefault();
+            }
+        };
+    }
+
+    function verificarBotonSiguiente() {
+        const datosGuardados = cargarDesdeLocalStorage();
+        const entrenadores = datosGuardados.entrenadores || [];
+        const btn = document.getElementById('btnSiguienteEntrenadores');
+        
+        if (entrenadores.length > 0) {
+            btn.disabled = false;
+            btn.classList.remove('btn-siguiente');
+            btn.classList.add('btn-aprobar');
+        } else {
+            btn.disabled = true;
+            btn.classList.remove('btn-aprobar');
+            btn.classList.add('btn-siguiente');
+        }
     }
 
     function siguientePaso() {
         const datosGuardados = cargarDesdeLocalStorage();
-        const entrenadores = datosGuardados.entrenadores || [];
-        
-        if (entrenadores.length > 0) {
+        if (datosGuardados.entrenadores && datosGuardados.entrenadores.length > 0) {
             window.location.href = "{% url 'escuelas:registro_wizard' 'tutores' %}";
         } else {
             showToast('Debe registrar al menos un entrenador', 'error');
         }
     }
-
-    // Inicializar
-    document.addEventListener('DOMContentLoaded', function() {
-        actualizarTablaEntrenadores();
-        
-        const datosGuardados = cargarDesdeLocalStorage();
-        const entrenadores = datosGuardados.entrenadores || [];
-        
-        if (entrenadores.length > 0) {
-            document.getElementById('btnSiguienteEntrenadores').disabled = false;
-            document.getElementById('btnSiguienteEntrenadores').classList.remove('btn-siguiente');
-            document.getElementById('btnSiguienteEntrenadores').classList.add('btn-aprobar');
-        }
-    });
 </script>
 {% endblock %}

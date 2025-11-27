@@ -199,19 +199,35 @@ def finalizar_registro(request):
                             id_periodo=periodo
                         )
                 
-                # 6. Guardar entrenadores
+                # === 5. ENTRENADORES Y SU DOCUMENTACIÓN (¡LO QUE FALTABA!) ===
                 entrenadores_data = datos_completos.get('entrenadores', [])
-                for entrenador_data in entrenadores_data:
+                for ent_data in entrenadores_data:
+                    # Crear Entrenador
                     entrenador = Entrenador.objects.create(
-                        dni_ent=entrenador_data.get('dni_ent'),
-                        nombre=entrenador_data.get('nombre'),
-                        apellido=entrenador_data.get('apellido'),
-                        fecha_nac=entrenador_data.get('fecha_nac'),
-                        email=entrenador_data.get('email', ''),
-                        telefono=entrenador_data.get('telefono', ''),
-                        domicilio=entrenador_data.get('domicilio', ''),
+                        dni_ent=ent_data.get('dni_ent'),
+                        nombre=ent_data.get('nombre'),
+                        apellido=ent_data.get('apellido'),
+                        fecha_nac=ent_data.get('fecha_nac'),
+                        email=ent_data.get('email', ''),
+                        telefono=ent_data.get('telefono', ''),
+                        domicilio=ent_data.get('domicilio', ''),
                         periodo=periodo
                     )
+
+                    # BUSCAR Y GUARDAR ARCHIVO DE BUENA CONDUCTA
+                    # La clave debe coincidir con el JS: file_entrenador_{DNI}
+                    dni = ent_data.get('dni_ent')
+                    file_key = f'file_entrenador_{dni}'
+                    
+                    if file_key in request.FILES:
+                        archivo = request.FILES[file_key]
+                        # Inyectamos storage R2 y guardamos
+                        entrenador.buena_conducta.storage = r2_storage
+                        entrenador.buena_conducta.save(archivo.name, archivo)
+                        print(f"✅ Buena conducta subida para DNI {dni}")
+                    else:
+                        print(f"⚠️ No se recibió archivo para entrenador {dni}")
+                        
                     EntDiscEscPer.objects.create(
                         dni_ent=entrenador,
                         id_esc=escuela,
